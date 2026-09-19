@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MICR220 Master Revision Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEEAE2;
+    --bg-deep:#E1DBCE;
+    --ink:#221E1B;
+    --ink-soft:#5A5450;
+    --card:#FBF9F4;
+    --line:#C9C0AC;
+    --line-soft:#DCD5C4;
+    /* default (neutral) accent, overridden per module while a question is on screen */
+    --accent:#4B4033;
+    --accent-dark:#332A21;
+    --accent-mist:#EDEAE2;
+    --good:#4F7A4A;
+    --good-mist:#E6EEE0;
+    --bad:#B0234A;
+    --bad-mist:#F7E4E9;
+  }
+  body[data-module="m1"]{
+    --accent:#4B2E83; --accent-dark:#33205C; --accent-mist:#EDE6F7;
+    --good:#4F7A4A; --good-mist:#E6EEE0; --bad:#B0234A; --bad-mist:#F7E4E9;
+  }
+  body[data-module="m2"]{
+    --accent:#2A6F86; --accent-dark:#1B4A57; --accent-mist:#E3EEF0;
+    --good:#2F8F6E; --good-mist:#E1F0EA; --bad:#C2572A; --bad-mist:#F7E4DB;
+  }
+  body[data-module="m3"]{
+    --accent:#2E5C3E; --accent-dark:#1F4029; --accent-mist:#E2EEE2;
+    --good:#B4762A; --good-mist:#F5E9D8; --bad:#9C4A3C; --bad-mist:#F3E1DC;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 900px 500px at 12% -10%, rgba(75,64,51,0.08), transparent),
+      radial-gradient(ellipse 700px 500px at 110% 10%, rgba(75,64,51,0.06), transparent),
+      var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    line-height:1.5;
+    transition:background 0.3s ease;
+  }
+  .wrap{max-width:780px;margin:0 auto;padding:36px 20px 80px;}
+  h1,h2,h3{font-family:'Fraunces', serif;margin:0;letter-spacing:-0.01em;}
+  .brand{display:flex;align-items:center;gap:14px;margin-bottom:6px;}
+  .brand-icon{flex:none;width:42px;height:42px;}
+  h1{font-size:1.5rem;font-weight:600;color:var(--accent-dark);}
+  .kicker{
+    font-family:'IBM Plex Mono',monospace;font-size:0.72rem;letter-spacing:0.06em;
+    color:var(--ink-soft);text-transform:uppercase;margin:2px 0 26px 56px;
+  }
+  .panel{
+    background:var(--card);border:1px solid var(--line-soft);border-radius:20px;padding:28px;
+    box-shadow:0 1px 0 rgba(34,30,27,0.04);
+  }
+  p.lead{color:var(--ink-soft);margin:10px 0 22px;max-width:60ch;}
+
+  .module-block{margin-bottom:22px;border:1px solid var(--line-soft);border-radius:16px;overflow:hidden;}
+  .module-head{
+    display:flex;align-items:center;gap:12px;padding:16px 18px;
+    background:var(--m-mist);cursor:pointer;user-select:none;
+  }
+  .module-dot{width:12px;height:12px;border-radius:50%;flex:none;background:var(--m-accent);}
+  .module-title{flex:1;font-weight:600;font-size:1rem;}
+  .module-sub{color:var(--ink-soft);font-size:0.78rem;margin-top:1px;}
+  .module-count{font-family:'IBM Plex Mono',monospace;font-size:0.73rem;color:var(--m-accent-dark);background:#fff;padding:3px 9px;border-radius:20px;flex:none;}
+  .module-toggle-all{
+    font-family:'IBM Plex Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.04em;
+    color:var(--m-accent-dark);background:transparent;border:1px solid var(--m-accent);border-radius:20px;
+    padding:5px 10px;cursor:pointer;flex:none;
+  }
+  .chevron{flex:none;width:16px;height:16px;transition:transform 0.2s ease;color:var(--ink-soft);}
+  .module-block.collapsed .chevron{transform:rotate(-90deg);}
+  .module-body{padding:4px 18px 10px;}
+  .module-block.collapsed .module-body{display:none;}
+  .section-row{display:flex;align-items:center;gap:14px;padding:12px 4px;border-bottom:1px solid var(--line-soft);cursor:pointer;}
+  .section-row:last-child{border-bottom:none;}
+  .section-row input{accent-color:var(--m-accent);width:18px;height:18px;flex:none;}
+  .section-row .meta{flex:1;}
+  .section-row .name{font-weight:600;font-size:0.94rem;}
+  .section-row .sub{color:var(--ink-soft);font-size:0.8rem;margin-top:1px;}
+  .section-row .count{
+    font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--m-accent-dark);
+    background:var(--m-mist);padding:3px 9px;border-radius:20px;flex:none;
+  }
+
+  .btn{font-family:'IBM Plex Sans';font-weight:600;font-size:0.98rem;padding:14px 26px;border-radius:30px;border:none;cursor:pointer;transition:transform 0.08s ease;}
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:disabled{background:#BDB6A9;cursor:not-allowed;}
+  .btn-ghost{background:transparent;color:var(--accent-dark);border:1.5px solid var(--accent);}
+  .btn-row{display:flex;gap:12px;margin-top:6px;flex-wrap:wrap;align-items:center;}
+  .selection-note{font-size:0.82rem;color:var(--ink-soft);margin-right:auto;}
+  .hidden{display:none !important;}
+
+  .progress-track{height:8px;background:var(--bg-deep);border-radius:6px;overflow:hidden;margin-bottom:10px;border:1px solid var(--line-soft);}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--bad));border-radius:6px;transition:width 0.35s ease;}
+  .progress-label{display:flex;justify-content:space-between;align-items:baseline;font-family:'IBM Plex Mono',monospace;font-size:0.74rem;color:var(--ink-soft);margin-bottom:22px;letter-spacing:0.02em;}
+  .section-tag{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--accent-dark);background:var(--accent-mist);padding:4px 10px;border-radius:5px;margin-bottom:14px;}
+  .section-tag .sep{opacity:0.5;}
+  .q-type-hint{font-size:0.78rem;color:var(--bad);font-style:italic;margin:-6px 0 14px;}
+  .q-prompt{font-size:1.15rem;font-weight:500;margin-bottom:20px;line-height:1.45;}
+  .options{display:flex;flex-direction:column;gap:10px;margin-bottom:22px;}
+  .option{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border:1.5px solid var(--line-soft);border-radius:12px;cursor:pointer;background:#fdfcf9;}
+  .option:hover{border-color:var(--accent);}
+  .option .mark{flex:none;width:20px;height:20px;margin-top:1px;border:2px solid var(--ink-soft);display:flex;align-items:center;justify-content:center;}
+  .option[data-type="single"] .mark{border-radius:50%;}
+  .option[data-type="multi"] .mark{border-radius:5px;}
+  .option .mark .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);opacity:0;}
+  .option[data-type="multi"] .mark .dot{border-radius:2px;}
+  .option.picked{border-color:var(--accent);background:var(--accent-mist);}
+  .option.picked .mark{border-color:var(--accent);}
+  .option.picked .mark .dot{opacity:1;}
+  .option.correct-reveal{border-color:var(--good);background:var(--good-mist);}
+  .option.correct-reveal .mark{border-color:var(--good);}
+  .option.correct-reveal .mark .dot{opacity:1;background:var(--good);}
+  .option.wrong-reveal{border-color:var(--bad);background:var(--bad-mist);}
+  .option.wrong-reveal .mark{border-color:var(--bad);}
+  .option.wrong-reveal .mark .dot{opacity:1;background:var(--bad);}
+  .option.locked{cursor:default;}
+  .option-text{font-size:0.97rem;}
+  .feedback{border-radius:12px;padding:14px 16px;margin-bottom:10px;font-size:0.92rem;display:none;}
+  .feedback.show{display:block;}
+  .feedback.correct{background:var(--good-mist);color:#1F3A28;border:1px solid #BFD9C4;}
+  .feedback.wrong{background:var(--bad-mist);color:#5E241A;border:1px solid #E3BEB3;}
+  .feedback b{display:block;font-family:'Fraunces',serif;font-size:1rem;margin-bottom:3px;}
+  .feedback-note{font-size:0.82rem;color:var(--ink-soft);font-style:italic;margin:0 0 20px;padding:0 2px;}
+  .score-hero{text-align:center;padding:10px 0 28px;}
+  .score-num{font-family:'Fraunces',serif;font-size:3.2rem;color:var(--accent-dark);font-weight:600;}
+  .score-sub{color:var(--ink-soft);font-size:0.95rem;}
+  .breakdown{display:flex;flex-direction:column;gap:10px;margin:22px 0 28px;}
+  .bd-group-label{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-soft);margin:14px 0 2px;}
+  .bd-group-label:first-child{margin-top:0;}
+  .bd-row{display:flex;align-items:center;gap:12px;}
+  .bd-name{width:170px;flex:none;font-size:0.85rem;font-weight:600;}
+  .bd-bar-track{flex:1;height:10px;background:var(--bg-deep);border-radius:6px;overflow:hidden;border:1px solid var(--line-soft);}
+  .bd-bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--good),#8BB583);}
+  .bd-frac{width:48px;flex:none;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:var(--ink-soft);}
+  .review-list{display:flex;flex-direction:column;gap:14px;margin-top:8px;}
+  .review-item{border-left:3px solid var(--bad);padding:4px 0 4px 14px;}
+  .review-item .rp{font-weight:600;font-size:0.92rem;margin-bottom:4px;}
+  .review-item .ra{font-size:0.85rem;color:var(--ink-soft);}
+  .review-item .ra b{color:var(--good);}
+  footer{text-align:center;color:var(--ink-soft);font-size:0.78rem;margin-top:34px;}
+  @media (max-width:480px){
+    .wrap{padding:24px 14px 60px;}
+    .score-num{font-size:2.5rem;}
+    .bd-name{width:120px;font-size:0.78rem;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand">
+    <svg class="brand-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="24" cy="24" r="19" stroke="#4B4033" stroke-width="2.4"/>
+      <circle cx="24" cy="14" r="3.4" fill="#4B2E83"/>
+      <circle cx="14" cy="30" r="3.4" fill="#5B3A78"/>
+      <circle cx="34" cy="30" r="3.4" fill="#2E5C3E"/>
+    </svg>
+    <h1>MICR220 Master Revision Quiz</h1>
+  </div>
+  <div class="kicker">Modules 1&ndash;3 &middot; every lecture set in one app</div>
+
+  <div class="panel" id="screen-start">
+    <p class="lead">Everything from all three modules, still grouped by lecture set. Open a module to tick the sections you want, mix and match across modules if you like, then start. Answer choices shuffle each time.</p>
+    <div id="module-list"></div>
+    <div class="btn-row">
+      <span class="selection-note" id="selection-note">No sections selected yet.</span>
+      <button class="btn btn-primary" id="btn-start" disabled>Start quiz</button>
+    </div>
+  </div>
+
+  <div class="panel hidden" id="screen-quiz">
+    <div class="progress-label">
+      <span id="progress-text">Question 1 of 1</span>
+      <span id="progress-score">Score: 0</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="section-tag" id="q-section-tag"><span id="q-module-name"></span><span class="sep">&middot;</span><span id="q-section-name"></span></div>
+    <div class="q-prompt" id="q-prompt"></div>
+    <div class="q-type-hint hidden" id="q-multi-hint">Select all that apply.</div>
+    <div class="options" id="q-options"></div>
+    <div class="feedback" id="q-feedback"></div>
+    <div class="feedback-note hidden" id="q-feedback-note"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-submit">Check answer</button>
+      <button class="btn btn-primary hidden" id="btn-next">Next question</button>
+    </div>
+  </div>
+
+  <div class="panel hidden" id="screen-results">
+    <div class="score-hero">
+      <div class="score-num" id="final-score">0%</div>
+      <div class="score-sub" id="final-sub">0 of 0 correct</div>
+    </div>
+    <h3 style="margin-bottom:12px;">By section</h3>
+    <div class="breakdown" id="breakdown"></div>
+    <div id="review-wrap">
+      <h3 style="margin-bottom:8px;">Questions to revisit</h3>
+      <div class="review-list" id="review-list"></div>
+    </div>
+    <div class="btn-row" style="margin-top:26px;">
+      <button class="btn btn-primary" id="btn-retake">Retake quiz</button>
+      <button class="btn btn-ghost" id="btn-home">Back to sections</button>
+    </div>
+  </div>
+
+  <footer>Combines the Module 1 (Microbiology), Module 2 (Immunology), and Module 3 (Evolution &amp; Ecology) revision quizzes.</footer>
+</div>
+
+<script>
+const T = true, F = false;
+function s(prompt, opts, correctIdx, note){
+  return { type:'single', prompt, note: note||null, options: opts.map((t,i)=>({text:t, correct:i===correctIdx})) };
+}
+function m(prompt, opts, correctIdxs, note){
+  return { type:'multi', prompt, note: note||null, options: opts.map((t,i)=>({text:t, correct:correctIdxs.includes(i)})) };
+}
+function tf(prompt, correctBool, note){
+  return s(prompt, ['True','False'], correctBool ? 0 : 1, note);
+}
+
+const m1Sections = [
+{
+  id:'l1-2', name:'Lectures 1\u20132', sub:'Foundations & history of microbiology',
+  questions:[
+    s('Which statement about the relationship between microbes and humans is FALSE?',
+      ['Bacteria in the digestive tract are important for digestion.','Most microbes are pathogenic.','Infectious disease is an important public health concern.','Microbes in root nodules fix nitrogen and allow plants to make nitrogen-rich products.'],1),
+    tf('All microorganisms require molecular oxygen to carry on life functions.', F),
+    s('The theory of spontaneous generation was refuted by the work of',
+      ['Robert Hooke','Louis Pasteur','Antoni van Leeuwenhoek','Robert Koch'],1),
+    s('Robert Koch received the 1905 Nobel Prize in Physiology or Medicine for',
+      ['identifying Mycobacterium tuberculosis as the causative agent of tuberculosis.','developing a smallpox vaccination.','developing a smallpox vaccination, identifying Mycobacterium tuberculosis as the causative agent of tuberculosis, and making an effective rabies vaccine.','making an effective rabies vaccine.'],0),
+    s('Robert Koch contributed to the field of microbiology by being the first person to',
+      ['develop the tuberculin test, formulate four postulates for definitively linking a specific microorganism to a specific disease, and use agar as a solidifying agent in growth media.','formulate four postulates for definitively linking a specific microorganism to a specific disease only.','use agar as a solidifying agent in growth media only.','develop the tuberculin test only.'],0),
+    s('Which of the following is/are characteristic of all cellular organisms?',
+      ['motility','communication, evolution, and motility','evolution','communication'],2),
+    s('A Pasteur flask has a(n)',
+      ['swan neck to prevent particulate matter from getting into the main body of the flask.','double neck so two substances may be added at the same time.','secondary opening at the base to allow for drainage.','inverted upper edge to prevent spillage while swirling.'],0),
+    s('Regarding early life on Earth',
+      ['microbial life, plant life, and animal life all appeared at about the same time.','it is impossible to determine which type of life first appeared.','microbial life existed for billions of years before plant and animal life.','microbial life existed long before animals but has been around for about the same amount of time as plants.'],2),
+    s('Transparent double-sided dishes used for growing microbes are most commonly called',
+      ['sterilization plates.','Petri dishes.','baker dishes.','culture medium plates.'],1),
+    tf("Treponema pallidum, a bacterium associated with syphilis, is not considered a pathogen because to date it remains unculturable in the lab, and, therefore, Koch's postulates are unable to be fulfilled.", F),
+    s('Which of the following best defines resolution in microscopy?',
+      ['The ability of a microscope to enlarge an object.','The ability to distinguish two adjacent objects as distinct and separate.','The magnification power of the objective lens.','The wavelength of light used to illuminate the specimen.'],1),
+    s('Which of the following statements about magnification and resolution is correct?',
+      ['High magnification always results in high resolution.','Resolution is limited by the wavelength of light, while magnification can be increased indefinitely.','Magnification and resolution are the same thing.','Resolution is more important than magnification for viewing small objects.'],1),
+    s('Why do bacterial cells usually lack contrast when viewed under a light microscope without staining?',
+      ['Bacteria are too small to be seen.','Bacterial cells absorb all light.','Bacterial cells have similar refractive indices to their surroundings, resulting in minimal light absorption or scattering.','The condenser is not focused properly.'],2),
+    s('What was the spontaneous generation theory?',
+      ['The theory that microorganisms reproduce by dividing.','The theory that microorganisms arose spontaneously from non-living material.','The theory that microorganisms cause disease.','The theory that microorganisms require oxygen to survive.'],1),
+    s("What is the primary purpose of Koch's postulates?",
+      ['To classify microorganisms based on their morphology.','To establish rigorous criteria for linking a specific microorganism to a specific disease.','To determine the optimal growth conditions for bacteria.','To identify the genetic material of microorganisms.'],1),
+    s('Which of the following displays association but NOT necessarily causation?',
+      ['A specific bacterium is found in all patients with a disease and absent in healthy individuals.','Microorganisms are found in rotten foods.','A pure culture of a bacterium causes disease when inoculated into a healthy host.','The same bacterium is re-isolated from an experimentally infected host.'],0),
+    s("What is the significance of the fourth postulate in Koch's postulates?",
+      ['It ensures that the disease is caused by a single microorganism.','It confirms that the isolated microorganism is the same as the one originally identified.','It proves that the microorganism can survive outside the host.','It demonstrates that the microorganism can be cultured indefinitely.'],1),
+    s("Which of the following is a limitation of Koch's postulates?",
+      ['They cannot be applied to bacterial diseases.','They are difficult to understand.','They do not apply to obligate intracellular parasites like viruses.','They require too much time to complete.'],2),
+    s('What is the principle behind enrichment culture techniques?',
+      ['Growing all microorganisms together in a mixed culture.','Selectively favoring the growth of specific microorganisms by manipulating environmental conditions.','Killing unwanted microorganisms with antibiotics.','Filtering out unwanted microorganisms from a culture.'],1),
+    s('How would you design an enrichment culture to isolate nitrogen-fixing bacteria from soil?',
+      ['Use a medium containing high concentrations of nitrogen compounds.','Use a medium containing antibiotics to kill non-nitrogen-fixing bacteria.','Use a medium lacking nitrogen compounds but containing other essential nutrients.','Use a medium at very high temperature to kill competing bacteria.'],2),
+    s('What is chemolithotrophy?',
+      ['The ability to use organic compounds for energy.','The ability to fix nitrogen from the atmosphere.','The ability to ferment sugars.','The oxidation of inorganic compounds linked to energy conservation.'],3),
+    s('What is a pure culture?',
+      ['Any microbe grown in holy water.','A culture of a single species of microorganism.','A culture of a microbial community.','A culture that has been filtered to remove all microorganisms.'],1),
+    s('Who pioneered the use of vaccination to prevent infectious diseases?',
+      ['Charles Darwin','Louis Pasteur','Ian Frazier','Edward Jenner','Carl Sagan'],3),
+  ]
+},
+{
+  id:'l3-4', name:'Lectures 3\u20134', sub:'Cell structure & the cytoplasmic membrane',
+  questions:[
+    s('The peptide interbridge crosslinking between peptidoglycan layers is found ONLY in the cell walls of',
+      ['gram-negative Bacteria.','Eukarya.','Archaea.','gram-positive Bacteria.'],3),
+    s('You are given an electron micrograph of a bacterial cell. In the micrograph you can clearly see three thin layers of different densities surrounding the cell. Based on the micrograph, you can infer that this cell is ________ and would appear ________ after application of the Gram stain procedure.',
+      ['gram-positive / pink','gram-negative / pink','gram-positive / purple','gram-negative / purple'],1),
+    s('Where within a eukaryotic cell is ribosomal RNA (rRNA) synthesized?',
+      ['nucleolus','mitochondrion','cytoplasm','lysosome'],0),
+    s('Which is/are a function(s) of the cytoplasmic membrane in prokaryotes?',
+      ['It serves as a permeability barrier, a docking station for proteins involved in bioenergetics reactions and transport, and a site for energy conservation.','It functions as a permeability barrier.','It is a major site of energy conservation.','It is an anchor for many proteins involved in bioenergetic reactions and transport.'],0),
+    s('Compared to Eukaryotes, Bacteria and Archaea have ________ surface-to-volume ratios, causing ________ nutrient exchange.',
+      ['higher / higher','lower / higher','higher / lower','lower / lower'],0),
+    s('When does endospore formation commence?',
+      ['when bacterial growth ceases due to limitation of an essential nutrient','following bacterial death','when the bacterium is undergoing binary fission','when bacteria are dividing exponentially'],0),
+    s('The cytoplasmic membrane could best be described as',
+      ['a highly selective permeability barrier.','a passive conduit for intracellular transport.','an impermeable barrier.','a rigid structure that protects the cell.'],0),
+    s('The energy source derived from the charge separation across the cytoplasmic membrane is referred to as',
+      ['carbohydrate charging.','the voltage source.','adenosine triphosphate.','the proton motive force.'],3),
+    s('All eukaryotes contain',
+      ['a membrane-enclosed nucleus.','mitochondria.','hydrogenosomes.','a nucleus, mitochondria, and hydrogenosomes.'],0),
+    s('The morphology of a cell influences its',
+      ['metabolism.','motility.','motility and surface-to-volume ratio.','surface-to-volume ratio.'],2),
+    s('Which structural component is found in the cell wall of gram-positive Bacteria but NOT gram-negative Bacteria?',
+      ['an outer membrane','lipopolysaccharide (LPS)','teichoic acid','a periplasmic space'],2),
+    s('The toxic component of the outer membrane in gram-negative Bacteria is derived from',
+      ['Lipid A of lipopolysaccharide (LPS).','teichoic acid.','the peptidoglycan layer.','porin proteins.'],0),
+    tf('Bacteria contain mitochondria, which they use to generate ATP.', F),
+    s('What is the Gram stain, and what does it differentiate?',
+      ['A staining technique that differentiates bacteria based on cell wall composition.','A staining technique that differentiates bacteria based on size.','A staining technique that differentiates bacteria based on motility.','A staining technique that differentiates bacteria based on oxygen requirements.'],0),
+    s('What are the limitations of the Gram stain?',
+      ['It cannot differentiate between bacteria.','It requires expensive equipment.','It does not work on all bacteria; some bacteria are Gram-variable or have unusual cell walls.','It can only be used on living bacteria.'],2),
+    s('What is chemotaxis, and which types of molecules typically stimulate this response?',
+      ['Movement toward light; photons.','Movement in response to specific chemicals like amino acids and sugars.','Random movement to explore the environment.','Movement away from all external stimuli.'],1),
+    s('What is an endospore, and why are endospores considered a survival strategy?',
+      ['A type of flagellum used for movement.','A highly differentiated, dormant cell stage with extreme resistance to harsh conditions.','A reproductive structure that produces multiple daughter cells.','A storage granule for nutrients.'],1),
+    s('Which type of transport requires ATP and moves molecules against their concentration gradient?',
+      ['Simple diffusion','Facilitated diffusion','Active transport','Osmosis'],2),
+    s('What is the proton motive force (PMF), and how is it generated during aerobic respiration?',
+      ['A gradient of ATP molecules across the membrane.','An electrochemical gradient of H+ ions across the cytoplasmic membrane.','A mechanical force generated by flagellar rotation.','A chemical bond between glucose and oxygen.'],1),
+    s('What is the difference between a bacterial capsule and a slime layer?',
+      ['Capsules are made of proteins; slime layers are made of polysaccharides.','Capsules are organized, tight matrices; slime layers are loosely attached and easily deformed.','Capsules are found only in Gram-positive bacteria.','Slime layers provide motility; capsules provide protection.'],1),
+    s('According to the endosymbiosis theory, what is the evolutionary origin of mitochondria?',
+      ['They evolved from the bacterial cell wall.','They evolved from a bacterial invasion of a primitive eukaryotic cell.','They are derived from the eukaryotic nucleus.','They evolved independently from prokaryotes.'],1),
+    s('What is the primary function of mitochondria in eukaryotic cells?',
+      ['Photosynthesis','Protein synthesis','Aerobic respiration and ATP production','DNA replication'],2),
+    s('Which line of evidence best supports the endosymbiotic theory for the origin of mitochondria?',
+      ['Mitochondria have a single membrane identical to the host cell\u2019s own membrane.','Mitochondria contain their own circular genome and bacterial-like ribosomes, and divide by a process resembling binary fission.','Mitochondria are synthesized fresh in each generation from nuclear genes alone.','Mitochondria are found only in plant cells.'],1),
+    s('A new antibiotic targets bacterial cell wall (peptidoglycan) synthesis. Why would it be effective against Gram-positive bacteria, less effective against Gram-negative bacteria, and completely ineffective against Mycoplasma?',
+      ['Gram-positive bacteria have a thick, exposed peptidoglycan layer the drug can easily reach; Gram-negative bacteria have an outer membrane that limits drug access to peptidoglycan; and Mycoplasma have no cell wall/peptidoglycan at all for the drug to target.','Gram-negative bacteria have more peptidoglycan than Gram-positive bacteria, and Mycoplasma have the thickest cell wall of all.','All three groups have identical cell walls, so the antibiotic should work equally well on each.','Mycoplasma have an outer membrane that blocks the drug, while Gram-positive and Gram-negative bacteria have no cell wall.'],0),
+  ]
+},
+{
+  id:'l5-8', name:'Lectures 5\u20138', sub:'Growth, metabolism, nutrition & control of microbes',
+  questions:[
+    tf('The net result of electron transport is the generation of a pH gradient and an electrochemical potential across the membrane.', T),
+    tf('A bacterium that lacks an arginine biosynthetic pathway would still be able to make proteins with arginine and grow only if arginine is supplemented into the growth medium.', T),
+    s('Which of the following statements is FALSE?',
+      ['The generation time of bacteria may vary from species to species.','Bacteria typically divide by binary fission, producing two daughter cells.','In the lag phase, cell death exceeds cell division.','In the death phase, bacterial growth may cease as a result of oxygen and nutrient depletion.'],2),
+    s('The cell membranes of thermophiles and hyperthermophilic bacteria typically have',
+      ['more saturated fatty acids.','All of these ANSWER choices are true of thermophiles and hyperthermophilic bacteria.','fewer unsaturated fatty acids.','more long chain fatty acids.'],1),
+    s('A ________ agent is a chemical that inhibits bacteria from reproducing, but does NOT necessarily kill them.',
+      ['bacteriolytic','xerophilic','bacteriostatic','bacteriocidal'],2),
+    s('The prokaryotic transport system that involves a substrate-binding protein, a membrane-integrated transporter, and an ATP-hydrolyzing protein is',
+      ['the ABC transport system.','group translocation.','simple transport.','symport.'],0),
+    s('From the standpoint of fermentative microorganisms, the crucial product in glycolysis is',
+      ['ATP and regenerated NAD+; the fermentation products are waste products.','not relevant because glycolysis is not a major pathway.','ethanol or lactate; ATP is a waste product.','CO2; ATP is a waste product.'],0),
+    s('Obligate anaerobes which are sensitive to O2 would be found growing',
+      ['approximately one-third of the way down the thioglycolate broth.','throughout a tube of thioglycolate broth.','only at the very top of a tube of thioglycolate broth.','only at the bottom of a tube of thioglycolate broth.'],3),
+    s('Selective medium differs from differential medium because',
+      ['differential medium contains growth inhibitors while selective medium does not.','selective medium permits growth of more organisms than differential medium.','selective medium permits growth of a particular microbial type while differential medium is used to distinguish between types of organisms.','differential medium differentiates pathogens from nonpathogens while selective medium grows only pathogens.'],2),
+    s('Which of the following would be used by a chemoorganotroph for energy?',
+      ['H2','H+','C2H3O2-','CO2'],2),
+    s('An agar plate for counting colonies and maximizing statistical validity should ideally contain',
+      ['100 to 1000 colonies.','30 to 300 colonies.','1 to 100 colonies.','50 to 100 colonies.'],1),
+    s('A halotolerant facultative anaerobe would grow BEST in which of the following environments?',
+      ['oxygen depleted saline','oxygen depleted non-saline','oxygenated saline','oxygenated non-saline'],3),
+    s('To ensure growth of a newly discovered bacterium with unknown nutritional requirements, it would be best to begin with a ________ medium rather than a ________ medium.',
+      ['complex / minimal','selective / complex','selective / differential','minimal / complex'],0),
+    s('A medium containing known substances in precise amounts is known as a ________ media.',
+      ['selective','complex','natural','defined'],3),
+    s('A microbe growing in a refrigerator is likely',
+      ['hyperthermophilic.','mesophilic.','psychrotolerant or psychrophilic.','psychrophilic.'],2),
+    s('Which metabolic strategy does NOT invoke the proton motive force for energy conservation?',
+      ['aerobic catabolism','photoautotrophy','chemoorganotrophy','fermentation'],3),
+    s('Serial dilutions are generally made',
+      ['to reach a suitable dilution while minimizing error.','All of these ANSWER choices apply.','when the appropriate viable count is unknown.','based on powers of 10, although other serial dilution factors are possible.'],1),
+    s('Bacterial growth refers to',
+      ['the time required for one cell to divide into two.','an increase in the number of cells.','the occurrence of mitosis.','the occurrence of binary fission.'],1),
+    s('The use of chemical agents directly on exposed body surfaces to destroy or inhibit vegetative pathogens is',
+      ['sterilization.','disinfection.','antisepsis.','sanitization.'],2),
+    s('The time interval required for the formation of two cells from one is called the',
+      ['generation time.','growth time.','growth rate.','division rate.'],0),
+    s('Nitrogen is an essential element for microbial growth primarily because it is a component of',
+      ['nucleic acids and proteins.','ATP only.','cellulose.','storage lipids only.'],0),
+    s('Iron is generally classified as a(n) ________ because it acts as a cofactor for enzymes rather than a structural building block.',
+      ['macronutrient','micronutrient','organic nutrient','trace toxin'],1),
+    s('Lactobacillus is unusual among bacteria in that it can substitute ________ for iron in some enzymatic roles.',
+      ['manganese','zinc','copper','calcium'],0),
+    s('An organism that uses light as its energy source and CO2 as its carbon source is classified as a',
+      ['photoautotroph.','photoheterotroph.','chemolithoautotroph.','chemoorganoheterotroph.'],0),
+    s('Escherichia coli, which uses organic chemicals as both its energy source and carbon source, is classified as a',
+      ['chemolithoautotroph.','photoheterotroph.','chemoorganoheterotroph.','photoautotroph.'],2),
+    s('In anaerobic respiration, a bacterium may use which of the following as an alternative terminal electron acceptor instead of oxygen?',
+      ['nitrate','glucose','ATP','pyruvate'],0),
+    s('Humans can carry out lactic acid fermentation but not alcoholic fermentation because human cells lack the enzyme',
+      ['pyruvate decarboxylase.','hexokinase.','lactate dehydrogenase.','ATP synthase.'],0),
+    s("An organism capable of anaerobic respiration using nitrate as a terminal electron acceptor, when grown without oxygen, will",
+      ['ferment instead, since no oxygen is present.','continue respiring rather than switch to fermentation.','stop all metabolic activity.','switch to photosynthesis.'],1),
+    s('Eukaryotic cells typically yield fewer net ATP per glucose than prokaryotic cells mainly because',
+      ['eukaryotes lack glycolysis.','energy is lost shuttling cytosolic NADH into the mitochondrion for the electron transport chain.','eukaryotes can only ferment.','prokaryotes have more ribosomes.'],1),
+    s("An organism's survival temperature range, compared to its growth temperature range, is",
+      ['narrower and always lower.','essentially identical.','much wider, extending well below and sometimes above the growth range.','irrelevant to temperature.'],2),
+    s('An organism with an optimum growth temperature around 37\u00b0C and an overall range of roughly 5\u201350\u00b0C is classified as a',
+      ['psychrophile.','mesophile.','thermophile.','hyperthermophile.'],1),
+    s('Taq DNA polymerase, used in PCR because it survives the high temperatures of the reaction, is sourced from a',
+      ['psychrophile.','mesophile.','hyperthermophile.','halophile.'],2),
+    s('Unsaturated fatty acids help keep a cell membrane fluid at low temperatures because their double bonds',
+      ['increase the chain length.','create kinks that prevent the fatty acid tails from packing tightly together.','add a positive charge to the tail.','remove the phosphate head group.'],1),
+    s('An organism that requires oxygen, but only at levels lower than normal atmospheric concentration, is a',
+      ['obligate aerobe.','microaerophile.','aerotolerant anaerobe.','obligate anaerobe.'],1),
+    s('An organism that does not use oxygen for growth but tolerates its presence without harm is a(n)',
+      ['obligate anaerobe.','microaerophile.','aerotolerant anaerobe.','obligate aerobe.'],2),
+    s('In the catalase test, bubbling after hydrogen peroxide is added to a bacterial colony indicates the organism is',
+      ['catalase-negative.','catalase-positive.','an obligate anaerobe.','a halophile.'],1),
+    s('In eukaryotic cells, free radicals are produced in large amounts mainly at the',
+      ['nuclear membrane.','inner mitochondrial membrane.','cell wall.','ribosome.'],1),
+    s('Extreme acidophiles and alkaliphiles maintain a cytoplasmic pH that is',
+      ["as extreme as their external environment.",'always exactly pH 7.','close to neutral (roughly pH 6\u20139), despite an extreme external pH.','unregulated and highly variable.'],2),
+    s('An organism that requires, or grows especially well in, relatively high NaCl concentrations (rather than merely tolerating them) is a',
+      ['halotolerant organism.','halophile.','xerophile.','osmophile.'],1),
+    s('The removal or destruction of ALL microbes, including endospores, from a surface or object is called',
+      ['disinfection.','sterilization.','antisepsis.','pasteurization.'],1),
+    s('A chemical used to reduce harmful microbes on INANIMATE objects or surfaces, often too harsh for living tissue, is a(n)',
+      ['antiseptic.','disinfectant.','pasteurizing agent.','sterilant used on skin.'],1),
+    s('In an autoclave, microorganisms are actually killed by',
+      ['the pressure alone.','the elevated temperature that the pressure makes possible.','a vacuum.','UV light.'],1),
+    s('Which of the following is NOT one of the general mechanisms by which chemical disinfectants and antiseptics act on microbial cells?',
+      ['protein denaturation','disruption of the cell membrane','DNA damage','selective inhibition of peptidoglycan cross-linking only'],3),
+    s('On a growth-curve graph plotting total cell count and viable cell count, a bactericidal (non-lytic) effect is best recognized by',
+      ['both counts falling together.','the viable count falling while the total cell count stays roughly constant.','the viable count plateauing while the total count stays constant.','both counts rising.'],1),
+    s('Which class of antibiotics targets the 50S ribosomal subunit?',
+      ['aminoglycosides','tetracyclines','macrolides (e.g. erythromycin)','quinolones'],2),
+    s('Aminoglycosides and tetracyclines both target the',
+      ['50S ribosomal subunit.','30S ribosomal subunit.','DNA gyrase.','RNA polymerase.'],1),
+    s('Sulfa drugs inhibit bacterial growth by',
+      ['blocking peptidoglycan synthesis.','competitively inhibiting folate synthesis.','blocking DNA gyrase.','targeting the outer membrane.'],1),
+    s('Quinolone antibiotics act by blocking',
+      ['folate synthesis.','DNA gyrase and DNA replication.','the 30S ribosome.','peptidoglycan cross-linking.'],1),
+    s('Beta-lactamase confers antibiotic resistance by',
+      ["pumping the drug out of the cell.",'cleaving the beta-lactam ring, inactivating the antibiotic.','altering the ribosomal target.','mutating RNA polymerase.'],1),
+    s('The Minimum Inhibitory Concentration (MIC) is defined as the',
+      ['highest antimicrobial concentration that still allows visible growth.','lowest antimicrobial concentration that still prevents visible growth.','concentration that kills 100% of a population instantly.','concentration always used in a Kirby-Bauer disc.'],1),
+    s('In a Kirby-Bauer disc-diffusion test, a larger zone of inhibition around the antibiotic disc generally indicates',
+      ['greater resistance.','greater susceptibility.','no antibiotic effect.','contamination of the plate.'],1),
+    s('A motile, Gram-positive rod isolated from an 80\u00b0C hot spring survives this extreme heat mainly because of adaptations such as',
+      ['a thin, fragile cell wall and reduced flagella.','more saturated, heat-stable membrane lipids and heat-stable proteins/enzymes, in addition to its thick peptidoglycan wall.','complete loss of a cell membrane.','reliance on facilitated diffusion alone for all transport.'],1),
+    s('Which growth phase has the largest increase in cell numbers per unit of time?',
+      ['death phase','exponential phase','lag phase','stationary phase'],1),
+    s('Maintaining a constant cell population in a chemostat requires the monitoring and control of',
+      ['nutrient concentrations.','the dilution rate of volume pumped in.','the population\u2019s waste products.','all of the above.'],3),
+    s('The exact composition of ________ media is known. ________ media inhibit the growth of some microbes. ________ media are used to culture fastidious microbes, particularly pathogens.',
+      ['complex / Differential / Selective','complex / Enriched / Differential','defined / Selective / Enriched','defined / Enriched / Differential'],2),
+    s('If a heterotrophic bacterium were grown in a minimal glucose medium and transferred during exponential growth phase into the complex LB medium, the cell would have a relatively',
+      ['short exponential phase because it already is in exponential growth phase.','high growth yield compared to cells transferred during stationary growth phase.','long lag phase because it has to adjust to a different chemical environment/medium.','short lag phase because of the availability of amino acids and other nutrients.'],3),
+    s('Why are serial dilutions often performed before aliquoting a sample of cells onto plates for counting colonies?',
+      ['The transferred spent media can affect growth and need to be diluted out.','Otherwise the colonies would be too numerous to count.','This dilution scheme decreases error.','Both b and c are correct.'],3),
+    s('Microbes that naturally live within mammalian hosts are',
+      ['psychrotolerant.','mesophiles.','thermophiles.','xerophiles.'],1),
+    s('________ organisms have a particularly difficult time maintaining a proton motive force to synthesize ATP using ATPase.',
+      ['Acidophilic','Alkaliphilic','Microaerophilic','Obligate anaerobic'],1),
+    s('________ and peroxidase both detoxify H2O2.',
+      ['Catalase','Hydroxylase','Oxide reductase','Superoxide reductase'],0),
+    s('Which type of microorganism would NOT be able to grow under anoxic conditions?',
+      ['aerotolerant anaerobe','anaerobe','facultative aerobe','microaerophile'],3),
+    s('Which type of microorganism shows even growth throughout thioglycolate broth?',
+      ['obligate aerobe','facultative aerobe','aerotolerant anaerobe','microaerophile'],2),
+    s('Heat-sensitive liquids are typically sterilized by',
+      ['autoclaving.','pasteurization.','filtration.','phenolic compounds.'],2),
+    s('A product purchased from a drug store guaranteed to kill or inhibit bacteria on skin is best described as a(n)',
+      ['sanitizer.','antiseptic.','disinfectant.','sterilant.'],1),
+    s('Which of the following is an example of a biofilm?',
+      ['transient skin microbes','dental plaque','marine diatoms','a planktonic microcolony'],1),
+  ]
+},
+{
+  id:'l9-10', name:'Lectures 9\u201310', sub:'Genetics, mutation & antibiotic resistance',
+  questions:[
+    s('A mutant that has a nutritional requirement for growth is an example of a(n)',
+      ['organotroph.','autotroph.','heterotroph.','auxotroph.'],3),
+    s('Microinsertions and microdeletions often result in ________ mutations.',
+      ['silent','auxotrophic','frameshift','advantageous'],2),
+    s('Which of the following methods may introduce foreign DNA into a recipient?',
+      ['transformation, transduction, and conjugation','conjugation','transduction','transformation'],0),
+    s('Consider the following experiment. First, large populations of two mutant strains of Escherichia coli are mixed, each requiring a different, single amino acid. After plating them onto a minimal medium, 45 colonies grew. Which of the following may explain this result?',
+      ['The colonies may be due to back mutation (reversion).','Either A or B is possible.','The colonies may be due to recombination.','Neither A nor B is possible.'],1),
+    s('Penicillins work by',
+      ['stimulating autolysins to form holes in the plasma membrane.','blocking the transpeptidation reaction that forms peptidoglycan cross-links.','activating autolytic enzymes.','All of these ANSWER choices are true.'],3),
+    tf('Mobile resistance genes encode enzymes that inactivate an antibiotic by altering its structure.', T),
+    tf('Antibiotic-sensitive bacteria sometimes produce cells that are transiently resistant to multiple antibiotics.', T),
+    tf('Antibiotic resistance can develop in a bacterium as a result of spontaneous mutation.', T),
+    s('Consider a mutation in which the change is from UAC to UAU. Both codons specify the amino acid tyrosine. Which type of point mutation is this?',
+      ['silent mutation','frameshift mutation','nonsense mutation','missense mutation'],0),
+    s('The process in which related DNA sequences from two different sources are exchanged is called',
+      ['reversion.','transduction.','phage conversion.','homologous recombination.'],3),
+    s('The complete DNA sequence and genes present in an organism is its ________, while its observed, expressed characteristics are its ________.',
+      ['phenotype / genotype','genotype / phenotype','wild type / mutant','mutant / wild type'],1),
+    s('The strain of an organism isolated from nature, or used as the reference/parent strain for comparison, is called the',
+      ['mutant.','wild type.','auxotroph.','prototroph.'],1),
+    s('A frameshift mutation is usually more disruptive than a point (base-substitution) mutation because it',
+      ['only ever changes one amino acid.','shifts the reading frame for every codon downstream of the mutation.','only affects non-coding DNA.','always restores the original protein sequence.'],1),
+    s('Base analogue mutagens (e.g. 5-bromouracil) cause mutations by',
+      ['being incorporated into DNA in place of normal bases, causing base mispairing.','physically cutting the DNA backbone.','inserting between base pairs to cause frameshifts.','directly deaminating existing bases.'],0),
+    s('Intercalating agents such as ethidium bromide typically cause mutations by',
+      ['being incorporated in place of a normal base.','inserting between base pairs, causing micro-insertions or deletions.','adding alkyl groups to bases.','blocking DNA polymerase entirely.'],1),
+    s('Horizontal gene transfer contributes to the spread of antimicrobial resistance mainly because',
+      ['it only occurs between identical species.','resistance genes on transferable plasmids can move rapidly between cells, including between different species, especially via conjugation.','it requires the recipient cell to already be resistant.','it only transfers chromosomal genes, never plasmids.'],1),
+    s('Efflux pumps contribute to antibiotic resistance by',
+      ['modifying the antibiotic\u2019s chemical structure.','pumping the drug out of the cell and lowering its intracellular concentration.','providing an alternative metabolic pathway.','degrading the antibiotic\u2019s target.'],1),
+    s('MRSA resists penicillin-class antibiotics largely through a metabolic bypass mechanism in which it acquires',
+      ['an efflux pump for beta-lactams.','beta-lactamase only.','an alternative penicillin-binding protein, PBP2a, via the mecA gene.','a modified ribosome.'],2),
+    s('Efflux-pump-based antibiotic resistance is especially common in Gram-negative bacteria because',
+      ['they lack a cell wall.','their outer membrane structure works together with efflux pump systems.','they have no plasmids.','they cannot undergo conjugation.'],1),
+    s('Taking antibiotics for a viral infection can still promote antibiotic resistance because',
+      ['antibiotics directly mutate the virus.','the drug exposes any bacteria present in or on the body to selective pressure, favouring resistant strains.','antibiotics weaken the immune system.','viruses carry resistance genes themselves.'],1),
+    s('Drug-resistant infections currently cause at least how many deaths globally each year?',
+      ['7,000','70,000','700,000','7,000,000'],2),
+    s('Which of the following is one of the major antimicrobial resistance threats highlighted for Australia?',
+      ['Carbapenemase-producing Enterobacteriales (CPE)','Common cold virus resistance','Penicillin-resistant Streptococcus pneumoniae only','Vaccine-resistant measles'],0),
+    s('Which of those listed below is NOT a major target for antibiotics?',
+      ['Protein translation','Peptidoglycan synthesis','Cytoskeleton synthesis','Nucleic acid synthesis'],2),
+    s('Which is NOT a class of antibiotic resistance mechanism?',
+      ['Modification of the drug target','Removal from the cell via efflux pump','Disruption of membrane structure','Enzymatic inactivation'],2),
+    s('Antibiotic resistances are often acquired by',
+      ['Horizontal gene transfer.','Spontaneous mutations.','Movement of mobile genetic elements.','All of the above.'],3),
+    tf('Persistence can be inherited and gained by genetic transfer.', F),
+    s('Polymyxins target ________ and thus are effective against ________ bacteria.',
+      ['LPS / gram-negative','LPS / gram-positive','Peptide interbridges / gram-negative','Peptide interbridges / gram-positive'],0),
+    s('Which of the following is NOT true about efflux pumps?',
+      ['Efflux pump genes are upregulated in biofilms.','They function to import antibiotics into cells.','Pseudomonas aeruginosa encodes several multidrug efflux pumps.','The AcrAB-TolC system of Escherichia coli contributes to multidrug resistance.'],1),
+    s('Quinolones like ciprofloxacin inhibit DNA gyrase and topoisomerase IV and thus',
+      ['Interfere with unwinding of DNA during replication.','Result in the ribosome misreading mRNAs.','Lead to pore formation and depolarization of the cell membrane.','Cause a shortage of peptidoglycan precursors that weakens the cell wall, leading to lysis.'],0),
+  ]
+},
+{
+  id:'l11-12', name:'Lectures 11\u201312', sub:'Virology',
+  questions:[
+    s('Some bacteriophage possess an enzyme similar to ________, which makes a small hole in the bacterial cell wall, allowing the viral nucleic acid to enter.',
+      ['lysozyme','nuclease','infectase','peptidoglycanase'],0),
+    s('When packaged in the virion, the complete complex of nucleic acid and protein is known as the virus...',
+      ['capsid.','nucleocapsid.','envelope.','concatemer.'],1),
+    s('All viral particles',
+      ['contain an envelope to prevent its degradation outside of a host.','are metabolically inert.','contain DNA.','are larger than bacterial cells.'],1),
+    s("Regarding the viral membrane of an enveloped virus, the lipids are derived from the ________, and the proteins are encoded by ________.",
+      ['virion / viral genes',"host's cell membrane / viral genes","host's cell membrane / host's genes","virion / host's genes"],1),
+    s('Viral replication occurs',
+      ['intracellularly.','either intracellularly or extracellularly, depending on the virus involved.','both intracellularly and extracellularly.','extracellularly.'],0),
+    s('Viruses infecting ________ are typically the easiest to grow in the laboratory.',
+      ['plants','fungi','prokaryotes','animals'],2),
+    s('The general steps of the viral lifecycle are similar in most viruses. One major exception, however, is entry into the host cell. How does this step differ between an animal cell and E. coli?',
+      ['The virion randomly attaches to E. coli, but viral binding to a specific receptor is required for entry into animal cells.','The entire virion enters E. coli, but only the nucleic acid is taken up by animal cells.','The entire virion is taken into an animal cell, but only the viral genome enters E. coli.','The virion fuses to the bacterial cell membrane of E. coli, while the genome is injected into an animal cell.'],2),
+    s('Retroviruses are medically important viruses because',
+      ['they include the poliovirus.','they include HIV.','they include all human pathogenic viruses.','they include the influenza virus.'],1),
+    s('When a solution composed of bacteria and infectious virions are mixed and spread on an agar plate, ________ form where viruses lyse the host cells.',
+      ['insertion sequences','prophages','colonies','plaques'],3),
+    s('Enveloped viral membranes are generally ________ with associated virus-specific ________.',
+      ['lipid bilayers / phospholipids','protein bilayers / lipids','lipid bilayers / proteins','glycolipid bilayers / phospholipids'],2),
+    s('The three general capsid shapes found among viruses are',
+      ['helical, icosahedral, and complex.','spherical, cubic, and linear.','rod, sphere, and ring.','helical, spherical, and tubular.'],0),
+    s('Hepatitis A has a single-stranded RNA genome, while Hepatitis B has a genome that is',
+      ['single-stranded RNA.','double-stranded DNA.','single-stranded DNA.','double-stranded RNA.'],1),
+    s('A +sense single-stranded RNA viral genome is defined by the fact that it',
+      ['must first be converted before it can be translated.','can be directly translated by host ribosomes, like mRNA.','is always converted to DNA before translation.','cannot be translated at all.'],1),
+    s('Retroviruses such as HIV are unusual in that during replication they convert their genome from',
+      ['double-stranded DNA to RNA.','single-stranded RNA to double-stranded DNA.','RNA directly to protein with no DNA step.','double-stranded DNA to protein.'],1),
+    s('Which of the following lists the general steps of the viral replication cycle in the correct order?',
+      ['Penetration, attachment, synthesis, release, assembly','Attachment, penetration, synthesis, assembly, release','Synthesis, attachment, penetration, assembly, release','Attachment, synthesis, penetration, release, assembly'],1),
+    s('In the lysogenic pathway of a temperate bacteriophage, the viral DNA',
+      ['is immediately assembled into new virions that lyse the cell.','integrates into the host chromosome as a prophage and is replicated passively without killing the cell.','is degraded by host restriction enzymes.','is transferred to a new host by conjugation.'],1),
+    s('A host cell in which proviral integration drives the cell toward uncontrolled division, potentially forming a tumour, is undergoing',
+      ['a lytic (virulent) infection.','a latent infection.','a persistent infection.','transformation.'],3),
+    s('Counting plaques in a plaque assay allows calculation of the',
+      ['viral genome length.','viral titre (concentration of infectious viral particles).','host cell generation time.','capsid protein sequence.'],1),
+    s("Antibiotics are ineffective against viruses mainly because",
+      ['viruses have a cell wall that antibiotics cannot penetrate.','viruses lack their own metabolism and rely entirely on host-cell machinery, which a drug cannot attack without harming the host cell.','viruses are too small for antibiotics to bind.','viruses are resistant via efflux pumps.'],1),
+    s('Fusion inhibitors such as enfuvirtide act as antiviral drugs by',
+      ['blocking viral attachment or entry into the host cell.','inhibiting viral nucleic acid synthesis.','preventing uncoating of the viral genome.','blocking release of new virions.'],0),
+    s('The extracellular state of a virus is referred to as a',
+      ['Virion','Viroid','Capsid','Lysogen'],0),
+    s('Viral genomes can be',
+      ['Linear or circular.','Double-stranded or single-stranded.','Composed of RNA or DNA.','All of the above.'],3),
+    s('A viral capsid is composed of individual units of ________ called ________.',
+      ['Polysaccharides / capsomeres','Polysaccharides / viroids','Proteins / capsomeres','Glycolipids / viroids'],2),
+    s('What is an effective way of growing an animal virus?',
+      ['You cannot grow animal viruses.','In lysogeny broth (LB).','In a primary cell culture.','On a tryptic soy agar medium.'],2),
+    s('The enzyme ________ is used by retroviruses to transfer information from RNA to DNA.',
+      ['RNA polymerase','Reverse transcriptase','Integrase','Helicase'],1),
+    s('Which is NOT a difference between bacteriophages and animal viruses?',
+      ['Many animal viruses are enveloped.','Many animal viruses replicate their genome within their host cell\u2019s nucleus.','Animal viruses are classified by their genome.','The entire virion of animal viruses enters the host cell.'],2),
+    s('Animal viruses typically enter a cell by',
+      ['Membrane fusion.','Endocytosis.','Membrane fusion or endocytosis.','Direct penetration.'],2),
+    s('The two types of structural symmetry in viruses are rod-shaped ________ and ________ (spherical) symmetry.',
+      ['Bacillus / coccus','Coccus / bacillus','Helical / icosahedral','Icosahedral / helical'],2),
+  ]
+},
+{
+  id:'assess1a', name:'Assessment 1A review', sub:'Cumulative review, Lectures 1\u201310',
+  questions:[
+    s('How many chromosomes do prokaryotes usually contain as part of their genome?',
+      ['one','two','ten','four'],0),
+    s('Organisms able to live in environments with high sugar concentrations are',
+      ['halotolerant.','osmophiles.','xerophiles.','none of the groups listed here'],1),
+    s('Most organisms can tolerate a temperature range of about',
+      ['10\u00b0C.','15-20\u00b0C.','50-60\u00b0C.','25-40\u00b0C.'],3),
+    m('Which of the following statements is true?',
+      ['Prokaryotic chromosomes are generally circular','Ribosomal RNAs can be used to study phylogenetic relationships between organisms','Phototrophs use light as an energy source','The cyanobacteria were the first heterotrophs to evolve on Earth','A differential stain is called "differential" because it differentiates cells according to their shape','The membrane proteins provide structural strength to most microorganisms'],
+      [0,1,2]),
+    m('Which of the following sentences is true?',
+      ["A cell\u2019s morphology provides general information on the cell\u2019s physiological capabilities.",'Lack of a cell wall distinguishes the mycoplasmas from others within Bacteria','Smaller prokaryotic cells generally grow faster than larger ones due to a higher surface-area-to-volume ratio','In general, swimming is performed with flagella, whereas gliding uses other cellular components such as pili','In phototaxis, photosynthetic organisms move away from a light source','Chemotaxis is a sensory response to oxygen levels affecting flagellar function'],
+      [1,2,3]),
+    s("What happens when a culture is incubated above the organism\u2019s maximum temperature for growth?",
+      ['The cell continues to grow at the normal rate.','The cells grow much faster than normal because the enzymatic reactions are occurring at a much faster rate.','The cell membranes collapse, proteins denature, and the cell usually dies.','The transport of nutrients into the cell is slow; therefore the cells grow more slowly'],2),
+    s('__________ destroys preexisting peptidoglycan, whereas __________ instead prevents its biosynthesis',
+      ['Ampicillin / penicillin','Lysozyme / penicillin','Penicillin / ampicillin','Penicillin / lysozyme'],1),
+    s('What is the composition of peptidoglycan?',
+      ['amino acids','monomeric sugar compounds','N-acetylglucosamine and N-acetylmuramic acid only','N-acetylglucosamine, N-acetylmuramic acid, and a few amino acids'],3),
+    s('Which structure is involved in the genetic exchange (conjugation) between cells?',
+      ['capsule','fimbria','pilus','porin'],2),
+    s('Which of these statements is TRUE?',
+      ['The gram-positive wall contains a thick peptidoglycan layer and is more complex than the gram-negative wall.','The gram-negative wall contains a thick peptidoglycan layer and is more complex than the gram-positive wall.','The gram-positive wall contains a thick peptidoglycan layer but is about as complex as the gram-negative wall.','The gram-positive wall contains a thick peptidoglycan layer but is less complex than the gram-negative wall.'],3),
+    s('Morphology is a term that refers to the ________ of an organism.',
+      ['size','appendages','shape','attachment sites'],2),
+    s('Which of the following forms of oxygen is/are generally toxic to living organisms?',
+      ['superoxide anion','hydrogen peroxide','hydroxyl radical','all of the oxygen species listed here'],3),
+    s('For bacteriophages and animal viruses ________ is the step in the viral life cycle that determines host cell specificity.',
+      ['attachment','penetration','synthesis','assembly'],0),
+    s('Which cell structure is stained in the Gram staining procedure?',
+      ['cell wall','cytoplasm','nucleoid region','ribosomes'],0),
+    s('Which is a function of the cytoplasmic membrane in prokaryotes?',
+      ['It functions as a permeability barrier.','It is an anchor for many proteins involved in bioenergetic reactions and transport.','It is a major site of energy conservation.','All of the answers listed here are functions of the cytoplasmic membrane.'],3),
+    s('A pure culture',
+      ['is sterile','is a population of identical cells','is made of a clearly defined chemical medium','was cultured for a certified stock culture'],1),
+    s('The ultimate limit of what we are able to see with a microscope is dictated by',
+      ['magnification','light intensity','visual acuity','resolution'],3),
+    m('Which of the following statements is true?',
+      ['Knowledge of microbial growth patterns is useful for controlling microbial growth.','The lag phase does NOT occur if all the cells in the culture are viable.','In the stationary phase, there is no net increase or decrease in cell number.','Microorganisms generally respond equally to a given environmental factor.','Irreversible damage to bacterial cells is more likely to occur at low rather than high temperatures.','An alkaliphile would likely be found in soda lakes and high carbonate soils.'],
+      [0,2,5]),
+    s('The cellular structure responsible for swimming motility is called a',
+      ['cilium','flagellum','pilus','podium'],1),
+    s('The structure that confers structural strength on the cell is known as the',
+      ['cytoplasmic membrane','cell wall','ribosome','cytoplasm'],1),
+  ]
+},
+];
+const m2Sections = [
+{
+  id:'l13', name:'Lecture 13 (2.1)', sub:'The immune system: an overview',
+  questions:[
+    s('Immunity is best defined as',
+      ["the body's ability to resist and eliminate pathogens or foreign substances using both innate and adaptive defence mechanisms.",'the presence of antibodies in the blood only.','a permanent state of disease resistance present from birth.','the process by which bacteria colonise the skin.'],0),
+    s('Which statement best distinguishes humoral from cell-mediated adaptive immunity?',
+      ['Humoral immunity is mediated by antibodies from B cells that neutralise extracellular pathogens/toxins; cell-mediated immunity is carried out by T cells that kill infected or abnormal cells.','Humoral immunity is carried out by T cells; cell-mediated immunity is carried out by B cells.','Both are mediated exclusively by phagocytes.','Humoral immunity only targets viruses.'],0),
+    s('Innate immunity is important in protection against infection because it',
+      ['provides a slow but highly specific response.','is the non-specific, immediate first line of defence that limits infection while the slower adaptive response is generated.','only functions after adaptive immunity has produced memory cells.','is found only in vertebrates.'],1),
+    tf('Adaptive immunity by itself is adequate to survive a brand-new infection, since it responds immediately.', F),
+    s('Compared with the primary immune response, the secondary immune response is',
+      ['slower, weaker, and dominated by IgM.','faster and stronger, and dominated by high-affinity IgG, due to memory cells.','identical in timing and antibody class.','mediated only by innate immunity.'],1),
+    s('Adaptive immunity is ________, while innate immunity is ________.',
+      ['specific / non-specific','non-specific / specific','slower / faster','born / developed'],0),
+    s('Which of these are forms of natural (innate) host resistance?',
+      ['intact skin, antibodies, lysozyme','intact skin, mucus, antibodies','stomach acid, mucus, antibodies','intact skin, stomach acid, mucus'],3),
+    s('Which of the following characteristics is unique to adaptive immune responses?',
+      ['Generation of memory cells','Unresponsiveness to antigens','Secretion of cytokines','Secretion of chemokines','Generation of antigen epitopes'],0),
+    s('Antigen specific immune responses are mediated by what type of cells?',
+      ['Phagocytic cells','Antigen specific cells','Antibody specific cells','Lymphocytes','Monocytes'],3),
+  ]
+},
+{
+  id:'l14', name:'Lecture 14 (2.2)', sub:'Components of the immune system',
+  questions:[
+    s('Myeloid and lymphoid cells both arise from',
+      ['mature B cells in the spleen.','pluripotent haematopoietic stem cells in the bone marrow.','epithelial cells in the skin.','antigen-presenting cells in lymph nodes.'],1),
+    s('Myeloid progenitors give rise to granulocytes, monocytes, erythrocytes, and platelets, while lymphoid progenitors give rise to',
+      ['T cells, B cells, and NK cells.','only red blood cells.','only granulocytes.','hepatocytes.'],0),
+    s('Granulocytes such as neutrophils, eosinophils, and basophils function mainly to',
+      ['produce antibodies.','phagocytose and kill pathogens, release toxic granule contents against parasites, and drive inflammatory/allergic responses.','present antigen exclusively to T cells.','generate immunological memory.'],1),
+    s('Which cell types are capable of phagocytosis?',
+      ['neutrophils, macrophages, and dendritic cells.','only B cells.','only NK cells.','only mast cells.'],0),
+    s('The correct order of steps in phagocytosis is',
+      ['engulfment, chemotaxis, adherence, killing, exocytosis.','chemotaxis, adherence/recognition, engulfment into a phagosome, fusion with a lysosome, killing/digestion, exocytosis of debris.','exocytosis, chemotaxis, adherence, engulfment.','killing, chemotaxis, adherence, engulfment.'],1),
+    s('In an immunocompetent host, a bacterial infection of the forearm is typically cleared because',
+      ['resident macrophages and complement trigger inflammation that recruits neutrophils to phagocytose bacteria, while dendritic cells carry antigen to lymph nodes to activate adaptive immunity.','the skin regenerates immediately with no immune involvement.','only pre-existing antibodies are used, with no innate response.','the infection resolves without any immune cell recruitment.'],0),
+    s('Lymphocytes reach the blood after leaving the interstitial (tissue) space by',
+      ['directly entering arterioles from the tissue.','draining via lymphatic vessels through lymph nodes to the thoracic duct, which returns them to venous blood for recirculation.','being phagocytosed and released into arterioles.','crossing directly through capillary walls into arterioles.'],1),
+    s('Chemokines contribute to leucocyte migration mainly by',
+      ['directly killing pathogens.','acting as leucocyte attractants that, together with adhesion molecules, direct white cells to migrate toward areas of high chemokine concentration.','preventing all leucocyte movement.','functioning only in the bone marrow.'],1),
+    s('ALL of the following are part of the adaptive immune system EXCEPT',
+      ['dendritic cells.','B cells.','T cells.','antibodies.'],0),
+    s('What part of the lymphatic system interacts with antigens and microorganisms that enter the body through mucous membranes?',
+      ['lymph nodes','spleen','MALT (mucosa-associated lymphoid tissue)','thymus'],2),
+    s('The inflammatory response associated with certain allergies is a result of ________ degranulation.',
+      ['neutrophil','mast cell','lymphocyte','monocyte'],1),
+    s('Which cells mediate allergic reactions?',
+      ['Macrophages','Fibroblasts','Plasma cells','Mast Cells','T helper cells'],3),
+    s('B cells mature in the ________, and T cells mature in the ________.',
+      ['bone marrow / bone marrow','bone marrow / thymus','spleen / thymus','bone marrow / thyroid'],1),
+    s('Cells of the innate immune system, such as macrophages, help initiate an adaptive immune response due to their',
+      ['phagocytic function.','endocytic function.','antigen-presenting function.','antibody-presenting function.'],2),
+    s('Virus-infected cells and tumour cells are targeted by ________, which are lymphoid-derived cells of the innate immune system.',
+      ['cytotoxic T cells','neutrophils','plasma cells','natural killer cells'],3),
+    s('Neutrophils are derived from which type of cells?',
+      ['Natural progenitor cells','Nutral progenitor cells','Lymphoid progenitor cells','Myeloid progenitor cells','Thymoid progenitor cells'],3),
+    s('Which is the predominant cell type involved in the early immune response in bacterial infection?',
+      ['Neutrophils','Monocytes','Eosinophils','Bacteriocytes','Lymphocytes'],0),
+  ]
+},
+{
+  id:'l15', name:'Lecture 15 (2.3)', sub:'The function of B and T cells',
+  questions:[
+    s('Clonal selection describes the process in which',
+      ['an antigen activates every lymphocyte in the body indiscriminately.','an antigen binds and activates only the lymphocyte clone bearing a matching receptor, which then proliferates.','B cells convert into T cells after antigen exposure.','memory cells are destroyed after antigen exposure.'],1),
+    s('When two different antigens, (a) and (b), are each introduced, clonal selection and expansion results in',
+      ['one single clone responding to both antigens.','two independent clones expanding, each producing antibody specific to only one of the two antigens.','no clonal expansion occurring.','antigen (a) suppressing the response to antigen (b).'],1),
+    s('An immunogen differs from a general antigen in that an immunogen',
+      ['is any molecule recognised by antibodies or receptors.','is capable of eliciting an immune response by itself, typically because it is foreign, large, and structurally complex.','cannot be recognised by T or B cell receptors.','is always a self molecule.'],1),
+    s('An epitope is best described as',
+      ['the whole antigen molecule.','the specific small region on an antigen that is actually bound by an antibody or T cell receptor.','a synonym for immunogen.','a structure found only on viruses.'],1),
+    s('B cells are activated when',
+      ['their B cell receptor binds antigen, usually with T helper cell co-stimulation, leading to proliferation and differentiation into plasma and memory cells.','they are exposed to any protein, regardless of specificity.','they migrate to the thymus.','they lose their immunoglobulin genes.'],0),
+    s('Which immunoglobulin isotype is the first responder to a new antigen and a strong complement activator?',
+      ['IgG','IgA','IgM','IgE'],2),
+    s('Which immunoglobulin isotype crosses the placenta, gives long-term immunity, and opsonises pathogens?',
+      ['IgM','IgG','IgE','IgD'],1),
+    s('Which immunoglobulin isotype mediates allergic reactions and anti-parasitic responses?',
+      ['IgA','IgE','IgD','IgM'],1),
+    s('MHC molecules are required for T cell activation because they',
+      ['directly kill pathogens.','present processed peptide antigens on the cell surface, allowing the TCR to recognise antigen only in the context of self-MHC.','are only expressed on B cells.','block antigen presentation.'],1),
+    s('MHC Class I differs from MHC Class II in that Class I',
+      ['presents exogenous peptides to CD4 T cells and is restricted to professional antigen-presenting cells.','presents endogenous (cytosolic) peptides to CD8 T cells and is found on nearly all nucleated cells.','is only found on red blood cells.','never presents peptide antigens.'],1),
+    s('T cells are activated when',
+      ['their TCR recognises peptide-MHC on an antigen-presenting cell together with a co-stimulatory signal such as CD28-B7.','they bind free antigen in solution with no MHC involvement.','they encounter antigen with no co-stimulatory signal at all.','they are exposed to complement proteins only.'],0),
+    s('CD8 cytotoxic T cells kill infected or abnormal cells after recognising antigen on',
+      ['MHC Class II, via cytokine release only.','MHC Class I, via perforin/granzyme release or Fas-mediated apoptosis.','no MHC molecule at all.','antibodies bound to the target cell.'],1),
+    s('CD4 helper T cells recognise antigen on MHC Class II and coordinate immune responses mainly by',
+      ['directly lysing infected cells.','secreting cytokines that help activate B cells, CD8 T cells, and macrophages.','producing antibodies themselves.','presenting antigen on MHC Class I.'],1),
+    s('T helper cells are required for optimal B cell function because they provide',
+      ['cytokines and CD40L co-stimulation needed for proliferation, antibody class switching, affinity maturation, and memory cell formation.','only MHC Class I molecules.','no measurable contribution to B cell responses.','inhibitory signals that suppress antibody production.'],0),
+    s('Which of the antibody isotypes is known to trigger type 1 hypersensitivity (allergy) responses?',
+      ['IgD','IgM','IgG','IgE','IgA'],3),
+    s('Which is the antibody isotype predominantly produced during a primary immune response?',
+      ['IgD','IgM','IgG','IgE','IgA'],1),
+    s('An antigen binding site is',
+      ['Situated on the exterior surface of the epitope and the beta chain of the B cell receptor','The part of the IgM J chain that binds to the antigen epitope','Formed by the variable regions of the heavy and light chains of an antibody','Formed by the antigen epitope that binds to the surface of the variable region of the heavy chain','Formed by the cell membrane associated IgD of the B cell'],2),
+    s('CD8 T cells lyse infected target cells by using which mechanism?',
+      ['Secreting perforin into target cells','Complement-mediated lysis','Secreting hydrogen peroxide into target cells','Binding to target cells with antibodies','None of the above mechanisms'],0),
+    s('In secondary immune responses to bacterial infection, which of the following cell types would be involved in the immune responses that eventually eliminates the pathogen?',
+      ['T cells and neutrophils','B cells and neutrophils','B cells, T cells and neutrophils','B cells, T cells, neutrophils and dendritic cells','B cells, T cells, neutrophils, dendritic cells and CD4 T cells'],4),
+  ]
+},
+{
+  id:'l16', name:'Lecture 16 (2.4)', sub:'Microbial relationships and the human microbiome',
+  questions:[
+    s("'Normal flora' (microbiota) refers to",
+      ['pathogens that always cause disease.','microbial communities that reside on and within the body without normally causing disease, contributing to digestion and immune development.','microbes found only in soil.','antibodies produced against gut bacteria.'],1),
+    s('A symbiotic relationship, compared with a non-symbiotic one, is characterised by',
+      ['a close, long-term physical association between two different species.','a brief, transient interaction with no physical association.','the complete absence of any interaction.','occurring only between members of the same species.'],0),
+    s('Which set correctly defines the three forms of symbiotic relationships?',
+      ['mutualism (both benefit), commensalism (one benefits, other unaffected), parasitism (one benefits at the expense of the other).','mutualism (both harmed), commensalism (both benefit), parasitism (neither affected).','commensalism (both harmed), mutualism (one benefits), parasitism (both benefit).','only mutualism and parasitism exist.'],0),
+    s("Parasitism is described as a 'one-sided relationship' because",
+      ['both organisms benefit equally.','the parasite benefits while directly harming the host.','neither organism is affected.','the host benefits at the parasite\u2019s expense.'],1),
+    s('Which of the following is a clinical example of parasitism?',
+      ['malaria (Plasmodium)','Lactobacillus in the gut','Staphylococcus epidermidis on skin','E. coli in the colon under normal conditions'],0),
+    s('The key difference between microbiota and microbiome is that',
+      ['microbiota refers to the actual living microbial community, while microbiome refers to the collective genomes of that community.','they are exactly the same thing.','microbiome refers only to viruses.','microbiota refers only to fungi.'],0),
+    s('Microbiota composition differs across body sites mainly because of local differences in',
+      ['pH, oxygen, moisture, and nutrients.','host eye colour.','blood type only.','ambient room temperature.'],0),
+    s('Short-chain fatty acids such as butyrate, produced by gut bacteria, are important because they',
+      ['are toxic to host colonic cells.','nourish colonic cells, maintain gut barrier integrity, and modulate immune and metabolic function.','have no effect on the host.','only affect the skin microbiota.'],1),
+    s('Certain gut microbiota compositions may contribute to obesity by',
+      ['reducing energy harvest from food.','increasing energy harvest from food and promoting fat storage and low-grade inflammation.','eliminating short-chain fatty acid production entirely.','having no relationship to host metabolism.'],1),
+    s('The microbiota supports immune function by',
+      ['suppressing gut-associated lymphoid tissue development entirely.','promoting gut-associated lymphoid tissue development, stimulating regulatory T cells, and providing colonisation resistance.','producing antibodies directly.','replacing the need for adaptive immunity.'],1),
+    s('Faecal Microbiota Transplantation is typically carried out to treat',
+      ['seasonal allergies.','recurrent or refractory Clostridioides difficile infection.','the common cold.','type 1 diabetes.'],1),
+  ]
+},
+{
+  id:'l17', name:'Lecture 17 (2.5)', sub:'Host-pathogen interactions',
+  questions:[
+    s('In infectious disease, invasion differs from colonisation in that invasion involves',
+      ['establishment of microorganisms at a body site without necessarily causing harm.','active penetration and spread of microorganisms into host tissue, causing disease.','the complete absence of microorganisms.','only extracellular bacteria.'],1),
+    s('An opportunistic pathogen is best described as an organism that',
+      ['always causes severe disease in healthy hosts.','is normally harmless but causes disease when host defences are compromised, e.g. Candida albicans causing thrush in an immunocompromised patient.','never colonises the human body.','is exclusively a virus.'],1),
+    s('The seriousness and progression of an infection is influenced by',
+      ["the pathogen's virulence and dose, the host's immune status, the site of infection, and how promptly treatment is given.",'only the colour of the pathogen\u2019s colonies.',"the patient's blood type alone.",'the time of year only.'],0),
+    s('The general steps of the infection process, in order, are',
+      ['exposure, adherence/colonisation, invasion, evasion of host defences, multiplication with tissue damage/toxin production, transmission.','transmission, exposure, invasion, adherence, evasion.','invasion, exposure, adherence, transmission.','evasion, multiplication, exposure, adherence, invasion, transmission.'],0),
+    s('Which bacterial enzyme aids tissue spread by breaking down host connective tissue?',
+      ['coagulase','hyaluronidase','IgA protease','catalase'],1),
+    s('IgA protease helps bacteria evade host defences by',
+      ['degrading host antibodies.','promoting clot formation.','breaking down connective tissue.','neutralising complement.'],0),
+    s('Lipopolysaccharide (LPS / endotoxin) functions by',
+      ['strongly activating innate immunity via TLR4, causing fever and inflammation, and in excess triggering septic shock.','being secreted actively by Gram-positive bacteria.','having no effect on the immune system.','only affecting adaptive immunity.'],0),
+    s('Endotoxins differ from exotoxins in that endotoxins are',
+      ['actively secreted proteins with high target specificity.','lipopolysaccharide components of the Gram-negative cell wall released on bacterial lysis, causing general systemic effects.','only produced by viruses.','identical in structure to exotoxins.'],1),
+    s('Some endotoxins of Gram negative bacteria cause septic shock. Which of the following is an example of an endotoxin?',
+      ['Tetanospasmin','Lipopolysaccharide','Chlorotoxin','Ceruloplasmin','Diphtheria toxin'],1),
+    s('NK cells are important in early antiviral defence because they',
+      ['produce antibodies against the virus.','kill infected cells lacking normal MHC I expression, providing early control before cytotoxic T cell responses develop.','only function after adaptive immunity is fully established.','require antigen presentation on MHC II.'],1),
+    s('Extracellular bacterial infections are mainly controlled by ________, whereas intracellular bacterial infections require ________.',
+      ['antibodies, complement, and phagocytosis / cell-mediated immunity, particularly Th1-activated macrophages and cytotoxic T cells.','cell-mediated immunity / antibodies alone.','NK cells only / B cells only.','no immune involvement in either case.'],0),
+    tf('Pattern recognition receptors (PRRs) are intracellular and insoluble.', F),
+    tf('Lipopolysaccharide, bacterial flagellin, and lipoteichoic acids are examples of pathogen-associated molecular patterns (PAMPs).', T),
+    s('Which of these have pattern recognition receptors (PRRs)?',
+      ['macrophages','gram-positive bacteria','neutrophils','both macrophages and neutrophils'],3),
+    s('ALL of the following have pathogen-associated molecular patterns (PAMPs) EXCEPT',
+      ['macrophages.','viruses.','Salmonella spp.','Shigella spp.'],0),
+    s('Some pathogens have developed mechanisms for resisting the innate phagocytic response. These include ALL of the following EXCEPT',
+      ['the ability to grow and persist in phagocytes.','producing leukocidins that kill phagocytes.','producing PAMPs (pathogen-associated molecular patterns) on the cell surface.','making a capsule to prevent adherence of a phagocyte.'],2),
+    s('Complement activation results in ALL of the following EXCEPT',
+      ['membrane lysis.','antibody production.','lysis of target cell.','enhanced phagocytosis.'],1),
+    s('Inflammation is characterized by',
+      ['redness.','swelling.','heat and pain.','all of the above.'],3),
+    s('Opsonization is the enhancement of ________ due to the deposition of ________ or ________ on the surface of a pathogen or other antigen.',
+      ['resistance / antibody / lipids','resistance / lipids / proteins','phagocytosis / antibody / complement','phagocytosis / PAMPs / PRR'],2),
+    s('Inflammation and fever both function to',
+      ['increase pathogen growth.','limit blood flow to tissues.','limit growth of pathogens.','destroy host tissues.'],2),
+    s('________ are found on all nucleated cells and can signal viral infection.',
+      ['MHC I','MHC II','Both MHC I and MHC II','Antigens'],0),
+    s('Which of the following does NOT occur when there is contact between an NK cell and a target cell?',
+      ['Granules in the NK cell migrate to the contact site.','Contents of granules are released.','Perforin enters the membrane of the target and forms a pore.','Surrounding cells lacking the antigen recognized by NK cells are also killed.'],3),
+    s('Which of the following statements about natural killer cells is TRUE?',
+      ['NK cells recognize and destroy infected cells using a three-receptor system.','NK cells exhibit memory after interacting with cells.','NK cells use granzymes to kill their targets.','NK cell number does not increase during recognition and destruction of infected cells.'],2),
+    s('Interferons',
+      ['make cells resistant to viral infection.','are host specific.','only work on specific viruses.','do not directly inactivate viruses.'],2,
+      "This answer (c) is as marked in the source Tutorial VI answer key, but it conflicts with the standard textbook description of interferons (host-specific but generally NOT virus-specific, inducing a broad antiviral state). Double-check this one against your own lecture notes."),
+    s('Which of the following happens when an NK cell binds to MHC I on a healthy cell?',
+      ['Perforin killing mechanisms are turned off.','Granzyme killing mechanisms are turned on.','MHC I activates the NK cell to kill.','All of the above are correct.'],0),
+    s('MHC proteins',
+      ['are always expressed on cell surfaces.','have embedded peptides derived from breakdown products of cell metabolism.','present peptide antigens.','are described by all of the above.'],3),
+  ]
+},
+{
+  id:'l18', name:'Lecture 18 (2.6)', sub:'Immunomanipulation: vaccines and their impact on health',
+  questions:[
+    s('Vaccination works by',
+      ['introducing a harmless form of antigen to stimulate a primary adaptive response and generate memory B and T cells, so a later real infection triggers a rapid, strong secondary response.','directly killing all future pathogens on contact.','suppressing the immune system to prevent overreaction.','providing only passive antibody protection.'],0),
+    s('Which explanation best captures the immunological basis of vaccination in plain terms for a worried parent?',
+      ["Vaccines contain a safe, weakened, or partial form of a germ that trains the baby's immune system to recognise and fight it quickly if ever exposed for real \u2014 like a practice drill.",'Vaccines make the baby immune to all diseases permanently after one dose.','Vaccines work by removing the need for the baby to have an immune system.','Vaccines directly attack the disease-causing organism only after infection occurs.'],0),
+    s('Herd immunity occurs when',
+      ['enough of a population is immune to reduce pathogen transmission, indirectly protecting unvaccinated or vulnerable individuals.','every single person in a population is vaccinated with no exceptions.','only vaccinated individuals are ever protected, with no benefit to others.','immunity is passed only through breast milk.'],0),
+    s('Active immunisation differs from passive immunisation in that active immunisation',
+      ['provides ready-made antibodies for immediate but temporary protection.',"stimulates the person's own immune system to produce a lasting response, e.g. via vaccination.",'never generates memory cells.','is only used in emergency antivenom treatment.'],1),
+    s('New generation vaccines (recombinant subunit, DNA/mRNA, viral vector, virus-like particle) are generally grouped by',
+      ['the colour of the vaccine vial.','whether they deliver whole pathogens, subunit proteins, or genetic material encoding the antigen.','the age of the recipient only.','their manufacturing cost.'],1),
+    s('Adjuvants are used in vaccines because they',
+      ['destroy the antigen before it reaches the immune system.','enhance and prolong the immune response by activating innate immune cells through pattern recognition receptors, improving antigen presentation.','replace the need for an antigen entirely.','suppress antibody production.'],1),
+    s('A key scientific justification for school-based vaccination programmes is that they',
+      ['reach large numbers of children efficiently, helping achieve and maintain herd immunity and reducing outbreaks in close-contact settings.','are only useful for administrative record-keeping.','have no effect on population-level disease transmission.','are required only for international travel.'],0),
+    s('Identify the INCORRECT statement regarding immunisation.',
+      ['Due to immunisation smallpox has been eradicated','Booster doses are given to increase total circulation lymphocyte numbers','Innate immune responses have a role in an immunised individual','Immunisation against tetanus and diphtheria is carried out in children','Currently there are no vaccines available against HIV/AIDS'],1),
+  ]
+},
+];
+const m3Sections = [
+{
+  id:'l19-20', name:'Lectures 19\u201320', sub:'Evolution, phylogeny & taxonomy',
+  questions:[
+    // --- from Revision Quiz Module 3-I ---
+    s('The first catalytic and self-replicating biological molecule was most likely',
+      ['ATP.','RNA.','DNA.','proteins.'],1),
+    s('A key concept in evolution is that all mutations are',
+      ['random.','either deleterious or beneficial.','neutral.','deleterious.'],0),
+    s('A gene for a specific trait may have more than one form, allowing the trait to vary. These sequence variants of a gene are called',
+      ['MLST.','ribotypes.','horizontal gene transfers.','alleles.'],3),
+    s('Polyphasic taxonomy uses methods that include',
+      ['phylogenetic methods.','genotypic methods.','phenotypic, genotypic, and phylogenetic methods.','phenotypic methods.'],2),
+    s('Chemical reactions involving ________ have been proposed as energy-yielding reactions for the earliest organisms on Earth.',
+      ['S, O\u2082, and H\u2082.','S, and H\u2082.','Fe, O\u2082, and H\u2082.','S, and O\u2082.'],1),
+    s('An important molecule in sequence-based evolutionary analyses of microbes are ________ genes.',
+      ['electron transport','SSU rRNA','tRNA','ATPase'],1),
+    s('Both deletions and insertions occur during the evolution of microbial genomes. Insertions bring in new genes that may be useful for the cell. Deletions',
+      ['always result in a severe loss of fitness but keep microbial genomes compact.','always result in a severe loss of fitness for the microorganism.','are uncommon because they are usually lethal.','may increase fitness of a microorganism by eliminating unneeded genes.'],3),
+    s('Multilocus sequence typing (MLST) involves sequencing several different',
+      ['tRNA genes.','genomes.','housekeeping genes.','rRNA genes.'],2),
+    s('Evolution is driven by',
+      ['random mutation.','genetic drift in very large populations.','intentional mutations.','selection pressure applied to random mutation.'],3),
+    s('If you allowed ten identical parallel Salmonella cultures to evolve for 10,000 generations under new growth conditions with very little nitrogen, the parallel cultures would',
+      ['not change or adapt very much over this small number of generations.','direct mutations to occur in nitrogen utilization and uptake genes in order to adapt rapidly to the culture conditions.','each accumulate different random mutations resulting in different adaptations to use the nitrogen in the media.','evolve identical adaptations to use the nitrogen source provided in the media.'],2),
+    // --- from L19-20 study notes ---
+    s('Evolution is best defined as',
+      ['a change occurring within a single organism during its lifetime.','descent with modification \u2014 a change in allele frequency in a population over time, resulting in inherited change across generations.','the process by which an organism consciously adapts within one generation.','a permanent, unchanging set of traits within a species.'],1),
+    s('Which statement correctly describes the unit of evolution?',
+      ['Individual organisms evolve during their lifetime.','Populations evolve; a single organism\u2019s genotype does not change over its lifetime.','Only entire species, never populations, can evolve.','Evolution requires conscious adaptation by the organism.'],1),
+    s('Microbes are particularly useful for studying evolution because they have',
+      ['small population sizes and long generation times.','large population sizes, short generation times, and horizontal gene transfer.','no capacity for mutation.','only sexual reproduction.'],1),
+    s('The three requirements for evolution to occur are',
+      ['mutation alone, with no other factors needed.','a process that creates allele variants, differences in reproductive success (selection), and a process that changes allele frequency over generations.','selection and genetic drift only.','horizontal gene transfer and sexual reproduction only.'],1),
+    s('The effects of a new mutation on an organism are typically',
+      ['always beneficial.','always deleterious.','neutral, deleterious, or (rarely) beneficial.','always lethal.'],2),
+    s('Recombination in microbes generates new gene combinations using DNA that is',
+      ['only ever from the organism\u2019s own genome.','already in the genome, or gained via horizontal gene transfer (HGT).','only ever from a bacteriophage genome.','only ever mitochondrial.'],1),
+    s('Which of the following is NOT one of the three main mechanisms of horizontal gene transfer?',
+      ['transformation','transduction','conjugation','mitosis'],3),
+    s('Transformation, as a mechanism of horizontal gene transfer, involves',
+      ['uptake of free DNA from the environment.','virus-mediated DNA transfer.','plasmid or chromosome transfer via direct cell-cell contact.','random spontaneous mutation.'],0),
+    s('Antibiotic exposure drives the spread of resistance mainly because it',
+      ['creates brand-new resistance mutations in direct response to the drug.','selects for pre-existing resistant variants already present in the population.','has no measurable effect on bacterial populations.','reverses existing resistance mutations.'],1),
+    s('Genetic drift differs from natural selection in that genetic drift',
+      ['is driven by differential reproductive success.','causes random changes in allele frequency due to chance, unrelated to fitness.','only occurs in very large populations.','requires horizontal gene transfer to occur.'],1),
+    s('Genetic drift has its strongest effect in',
+      ['very large, stable populations.','small populations and during population bottlenecks.','populations undergoing no reproduction at all.','populations with no mutation.'],1),
+    s('Antigenic drift, which explains why seasonal influenza vaccines must be updated yearly, is an example of',
+      ['natural selection.','genetic drift.','horizontal gene transfer.','antigenic shift.'],1),
+    s('Antigenic shift, in contrast to antigenic drift, refers to',
+      ['gradual accumulation of point mutations over many years.','reassortment of RNA segments between two different viruses infecting the same host cell.','random genetic drift occurring in small populations.','loss of a gene through deletion.'],1),
+    s('Which of the following lists early Earth events in the correct chronological order (earliest to most recent)?',
+      ['LUCA, Earth forms, Great Oxidation Event, liquid water forms.','Earth forms, liquid water forms, life appears, LUCA, divergence of Bacteria/Archaea, Great Oxidation Event.','Great Oxidation Event, LUCA, Earth forms, life appears.','Divergence of Bacteria/Archaea, LUCA, Earth forms, liquid water forms.'],1),
+    s('The Great Oxidation Event, driven by the evolution of oxygenic photosynthesis in cyanobacteria, occurred approximately',
+      ['4.5 billion years ago.','3.7 billion years ago.','2.5 billion years ago.','600 million years ago.'],2),
+    s('As oxygen appeared in the atmosphere, ________ also accumulated, which formed a protective barrier that protects the Earth from ________.',
+      ['ozone / UV radiation','elemental sulfur / volcanism','ferrous iron / hydroxylating radicals','sulfate / hydrogen sulfide'],0),
+    s('LUCA (Last Universal Common Ancestor) is best described as',
+      ['the very first life form to ever exist on Earth.','the inferred ancestral population from which Bacteria and Archaea (and later Eukarya) descend \u2014 not necessarily the first life form or a single cell.','a still-living modern bacterial species.','the ancestor of Eukarya only.'],1),
+    s('The RNA World hypothesis proposes that early life was probably',
+      ['DNA-based, with RNA appearing much later.','RNA-based, since RNA can act as a catalyst as well as store genetic information.','protein-based only, with no nucleic acids.','based entirely on lipid membranes with no genetic material.'],1),
+    s('Early cells on the anoxic early Earth were most likely',
+      ['obligate aerobes.','anaerobes.','dependent on atmospheric oxygen for respiration.','photosynthetic and oxygen-producing from the start.'],1),
+    s('Which process describes the oxidation of inorganic compounds such as H2 for energy, supporting early autotrophic production of organic matter?',
+      ['fermentation','chemolithotrophy','photoheterotrophy','glycolysis'],1),
+    s('The first photosynthetic organisms on Earth were',
+      ['oxygenic, producing O2 as a waste product from the start.','anoxygenic, with oxygenic photosynthesis evolving later in cyanobacteria.','entirely absent until cyanobacteria evolved.','chemolithotrophic rather than photosynthetic.'],1),
+    s('According to the endosymbiotic theory, mitochondria most likely descended from',
+      ['Cyanobacteria.','Alphaproteobacteria.','Archaea.','ancestral Eukarya.'],1),
+    s('According to the endosymbiotic theory, chloroplasts most likely descended from',
+      ['Alphaproteobacteria.','Cyanobacteria.','Archaea.','Fungi.'],1),
+    s('Two eukaryotic organelles that are hypothesized to be the result of endosymbiosis are the ________ and the ________.',
+      ['nucleus / Golgi body','mitochondrion / chloroplast','endoplasmic reticulum / Golgi body','hydrogenosome / chloroplast'],1),
+    s('Which of the following is NOT evidence supporting the endosymbiotic theory?',
+      ['mitochondria and chloroplasts have double membranes.','they contain circular genomes similar to bacterial chromosomes.','they divide by a process resembling bacterial binary fission.','they are surrounded by a single membrane identical to the host cell membrane.'],3),
+    s('In a phylogenetic tree, the points where lineages diverge from a common ancestor are called',
+      ['branches.','nodes.','outgroups.','bootstraps.'],1),
+    s('An outgroup in a phylogenetic tree is used to',
+      ['show the most recently evolved species.','root the tree, since it is a more distantly related reference taxon.','calculate branch length only.','replace the need for sequence alignment.'],1),
+    s('A bootstrap value in a phylogenetic tree represents',
+      ['the exact date a lineage diverged.','statistical support for a given branching pattern.','the total number of species included in the tree.','the physical size of the organism.'],1),
+    s('The first step in building a phylogenetic tree from sequence data is to',
+      ['calculate a distance matrix.','choose a homologous character, such as a gene (e.g. SSU rRNA).','apply a tree-building algorithm.','assign bootstrap values.'],1),
+    s('Genes that share a common evolutionary ancestor are described as',
+      ['paralogous.','homologous.','polyphyletic.','convergent.'],1),
+    s('Orthologous genes, such as human TP53 and mouse Trp53, are homologous genes separated by a',
+      ['gene duplication event.','speciation event.','convergent evolution event.','horizontal gene transfer event.'],1),
+    s('Paralogous genes, such as human HBA1 and HBA2, are homologous genes separated by a',
+      ['speciation event.','gene duplication event within a lineage.','horizontal gene transfer event.','convergent evolution event.'],1),
+    s('A monophyletic group (clade) consists of',
+      ['an ancestor plus some, but not all, of its descendants.','an ancestor plus ALL of its descendants.','organisms grouped only by convergent traits, without a shared immediate ancestor.','organisms with no common ancestor at all.'],1),
+    s("'Prokaryotes' is often cited as a classic example of a ________ group, because it excludes Eukarya despite Eukarya sharing the same ancestry.",
+      ['monophyletic','paraphyletic','polyphyletic','orthologous'],1),
+    s('A paraphyletic group is a group that:',
+      ['includes some but not all members descended from one ancestor.','has the same fitness level.','includes all the members descended from a single ancestor.','shares one phylogenetic marker.'],0),
+    s("A polyphyletic group, such as 'warm-blooded animals' (birds + mammals), is defined by",
+      ['sharing an immediate common ancestor.','members grouped by convergent traits only, without sharing the immediate common ancestor.','including an ancestor and all of its descendants.','horizontal gene transfer between members.'],1),
+    s('Convergent evolution can mislead phylogenetic analysis because it',
+      ['always indicates a very recent common ancestor.','produces similar traits in unrelated or distantly related species through independent evolution, mimicking true relatedness.','only affects prokaryotic organisms.','is the same phenomenon as horizontal gene transfer.'],1),
+    s('Horizontal gene transfer can complicate phylogenetic analysis because it can make an organism',
+      ['appear less related to every other organism.','appear more closely related to a gene donor than its true evolutionary history would suggest.','impossible to sequence at all.','lose all of its own genetic material.'],1),
+    s('The traditional operational threshold for defining separate species in Bacteria/Archaea combines',
+      ['\u226570% DNA-DNA hybridization AND \u22643% SSU rRNA sequence difference.','\u226470% DNA-DNA hybridization AND \u22653% SSU rRNA gene sequence difference.','100% DNA-DNA hybridization only, with no sequence data.','SSU rRNA sequence alone, with no hybridization data required.'],1),
+    s("In DNA-DNA hybridization, the percentage hybridization of organism A's DNA with itself (used as a control) is",
+      ['0%.','50%.','100%.','variable and unpredictable.'],2),
+    s('Because DNA-DNA hybridization reveals subtle differences in genes, it is useful for differentiating organisms from different:',
+      ['domains.','families.','orders.','strains or species.'],3),
+    s('E. coli K-12 and E. coli O157:H7, both members of the same species, are estimated to have diverged approximately',
+      ['4.5 thousand years ago.','4.5 million years ago.','100 million years ago.','4.5 billion years ago.'],1),
+    s('The molecular clock concept assumes that sequence changes',
+      ['accumulate roughly with elapsed time, largely through random, non-disruptive mutations.','never occur in conserved genes.','only occur during horizontal gene transfer events.','are always beneficial and actively selected for.'],0),
+    s('The core genome of a bacterial species consists of',
+      ['only accessory genes found in a few strains.','genes shared by ALL strains of that species, supporting basic cellular functions.','genes acquired exclusively through horizontal gene transfer.','genes found only in the original type strain.'],1),
+    s('The pan genome of a species is defined as',
+      ['the core genome only.','the core genome plus all accessory genes found across different strains.','a single strain\u2019s complete genome.','only the genes involved in pathogenicity.'],1),
+    s('The pangenome of a microbial species is constantly changing because of:',
+      ['bottleneck events.','horizontal gene transfer.','substitutions.','substitution and bottleneck events.'],1),
+    s('The taxonomic classification hierarchy, from broadest to narrowest, is',
+      ['Species, Genus, Family, Order, Class, Phylum, Kingdom, Domain.','Domain, Kingdom, Phylum, Class, Order, Family, Genus, Species.','Genus, Species, Family, Order, Class, Phylum, Domain.','Phylum, Domain, Class, Order, Family, Genus, Species.'],1),
+    s('Binomial nomenclature requires a species name to consist of',
+      ['only a genus name.','[Genus] [epithet], e.g. Allochromatium warmingii.','a common English name only.','a numerical code only.'],1),
+    s('Genome fingerprinting methods used for fast, specific microbial identification include',
+      ['ribotyping, rep-PCR, and AFLP.','only Gram staining.','only 16S rRNA sequencing.','only MLST.'],0),
+    s('Multilocus sequence typing (MLST) is particularly useful because it',
+      ['sequences a single rRNA gene only.','sequences several essential housekeeping genes, giving strain-level resolution useful in clinical microbiology and epidemiology.','relies solely on phenotypic traits.','cannot distinguish between closely related strains.'],1),
+  ]
+},
+{
+  id:'ecology', name:'Microbial ecology', sub:'Module 3-II revision quiz',
+  questions:[
+    s('What adaptation allows organisms to tolerate high pressures?',
+      ['decreased lipid content','increased unsaturated fatty acids','increased ribosome size','decreased cell size'],1),
+    s('The most abundant prokaryotic organism in the ocean is of the ________ genus.',
+      ['Roseobacter','Prochlorococcus','Puniceispirillum','Pelagibacter'],3),
+    s('A process where different microbial taxa work in cooperation to degrade a compound that neither can perform entirely on their own is called',
+      ['allotrophy.','syntrophy.','commensalism.','ammensalism.'],1),
+    s('An organism living along the very bottom of a body of water is described as being',
+      ['benthic.','neritic.','pelagic.','littoral.'],0),
+    s('A population of metabolically related microorganisms is called a(n)',
+      ['haplotype.','niche.','ecosystem.','guild.'],3),
+    s('Nitrogen fixation results in the',
+      ['addition of biologically available N to an ecosystem.','direct formation of nitrate.','loss of biologically available N from an ecosystem.','formation of nitrogen gas.'],0),
+    s('Which aquatic habitat contains a pelagic zone?',
+      ['open ocean','estuary','salt marsh','lake'],0),
+    s('________ are the main primary producers in freshwater environments.',
+      ['Phototrophic microorganisms','Chemolithotrophic microorganisms','Heterotrophic microorganisms','Viral microorganisms'],0),
+    s('Which bacterial genus is responsible for producing ferrous iron (Fe2+) in groundwater?',
+      ['Loktanella','Alteromonas','Geobacter','Aquifex'],2),
+    s('Nitrous oxide (N2O) is a',
+      ['potent greenhouse gas that is a product of denitrification.','direct product of nitrogen fixation.','potent greenhouse gas that is a product of nitrification.','direct product of ammonification.'],0),
+  ]
+},
+];
+
+const modules = [
+  {
+    id:'m1', name:'Module 1: Microbiology Foundations', sub:'Lectures 1\u201312 + Assessment 1A review',
+    accent:'#4B2E83', accentDark:'#33205C', mist:'#EDE6F7',
+    sections: m1Sections
+  },
+  {
+    id:'m2', name:'Module 2: Immunology in Action', sub:'Lectures 13\u201318 + Tutorial VI',
+    accent:'#2A6F86', accentDark:'#1B4A57', mist:'#E3EEF0',
+    sections: m2Sections
+  },
+  {
+    id:'m3', name:'Module 3: Evolution & Ecology', sub:'Lectures 19\u201320 + microbial ecology',
+    accent:'#2E5C3E', accentDark:'#1F4029', mist:'#E2EEE2',
+    sections: m3Sections
+  },
+];
+</script>
+<script>
+/* ---------------- Render module/section picker ---------------- */
+const moduleListEl = document.getElementById('module-list');
+
+modules.forEach(mod=>{
+  const block = document.createElement('div');
+  block.className = 'module-block';
+  block.style.setProperty('--m-accent', mod.accent);
+  block.style.setProperty('--m-accent-dark', mod.accentDark);
+  block.style.setProperty('--m-mist', mod.mist);
+
+  const totalQ = mod.sections.reduce((a,sec)=>a+sec.questions.length,0);
+
+  const head = document.createElement('div');
+  head.className = 'module-head';
+  head.innerHTML = `
+    <svg class="chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="module-dot"></div>
+    <div style="flex:1">
+      <div class="module-title">${mod.name}</div>
+      <div class="module-sub">${mod.sub}</div>
+    </div>
+    <div class="module-count">${totalQ} q</div>
+    <button type="button" class="module-toggle-all" data-mod="${mod.id}">Select all</button>
+  `;
+  head.addEventListener('click', (e)=>{
+    if(e.target.closest('.module-toggle-all')) return;
+    block.classList.toggle('collapsed');
+  });
+
+  const body = document.createElement('div');
+  body.className = 'module-body';
+  mod.sections.forEach(sec=>{
+    const row = document.createElement('div');
+    row.className = 'section-row';
+    row.innerHTML = `
+      <input type="checkbox" data-mod="${mod.id}" data-sec="${sec.id}">
+      <div class="meta">
+        <div class="name">${sec.name}</div>
+        <div class="sub">${sec.sub}</div>
+      </div>
+      <div class="count">${sec.questions.length} q</div>
+    `;
+    row.addEventListener('click', (e)=>{
+      if(e.target.tagName !== 'INPUT'){
+        const box = row.querySelector('input');
+        box.checked = !box.checked;
+        box.dispatchEvent(new Event('change'));
+      }
+    });
+    row.querySelector('input').addEventListener('change', updateSelectionState);
+    body.appendChild(row);
+  });
+
+  block.appendChild(head);
+  block.appendChild(body);
+  moduleListEl.appendChild(block);
+
+  head.querySelector('.module-toggle-all').addEventListener('click', ()=>{
+    const boxes = body.querySelectorAll('input[type=checkbox]');
+    const allChecked = Array.from(boxes).every(b=>b.checked);
+    boxes.forEach(b=>{ b.checked = !allChecked; });
+    head.querySelector('.module-toggle-all').textContent = allChecked ? 'Select all' : 'Clear all';
+    updateSelectionState();
+  });
+});
+
+function updateSelectionState(){
+  const checked = moduleListEl.querySelectorAll('input[type=checkbox]:checked');
+  const note = document.getElementById('selection-note');
+  const startBtn = document.getElementById('btn-start');
+  if(checked.length === 0){
+    note.textContent = 'No sections selected yet.';
+    startBtn.disabled = true;
+  } else {
+    let qCount = 0;
+    checked.forEach(box=>{
+      const mod = modules.find(mm=>mm.id===box.dataset.mod);
+      const sec = mod.sections.find(ss=>ss.id===box.dataset.sec);
+      qCount += sec.questions.length;
+    });
+    note.textContent = `${checked.length} section${checked.length>1?'s':''} selected \u2014 ${qCount} question${qCount>1?'s':''}.`;
+    startBtn.disabled = false;
+  }
+  // keep each module's "select all" button label in sync
+  document.querySelectorAll('.module-block').forEach(block=>{
+    const boxes = block.querySelectorAll('input[type=checkbox]');
+    const btn = block.querySelector('.module-toggle-all');
+    const allChecked = Array.from(boxes).every(b=>b.checked);
+    btn.textContent = allChecked ? 'Clear all' : 'Select all';
+  });
+}
+</script>
+<script>
+/* ---------------- Quiz state & logic ---------------- */
+let activeSelections = []; // [{modId, modName, secId, secName, questions}]
+let flatQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let answered = false;
+let missed = [];
+let sectionTally = {}; // keyed by `${modId}::${secId}`
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+document.getElementById('btn-start').addEventListener('click', ()=>{
+  const checked = Array.from(moduleListEl.querySelectorAll('input[type=checkbox]:checked'));
+  if(checked.length === 0) return;
+  activeSelections = checked.map(box=>{
+    const mod = modules.find(mm=>mm.id===box.dataset.mod);
+    const sec = mod.sections.find(ss=>ss.id===box.dataset.sec);
+    return { modId:mod.id, modName:mod.name, secId:sec.id, secName:sec.name, questions:sec.questions };
+  });
+  buildFlatQuestions();
+  score = 0; currentIndex = 0; missed = [];
+  sectionTally = {};
+  activeSelections.forEach(sel=>{
+    sectionTally[`${sel.modId}::${sel.secId}`] = {correct:0,total:sel.questions.length,name:sel.secName,modName:sel.modName};
+  });
+  showScreen('quiz');
+  renderQuestion();
+});
+
+function buildFlatQuestions(){
+  flatQuestions = [];
+  activeSelections.forEach(sel=>{
+    sel.questions.forEach(q=>{
+      flatQuestions.push({
+        modId: sel.modId,
+        modName: sel.modName,
+        secId: sel.secId,
+        secName: sel.secName,
+        type: q.type,
+        prompt: q.prompt,
+        note: q.note,
+        options: shuffle(q.options),
+      });
+    });
+  });
+  flatQuestions = shuffle(flatQuestions);
+}
+
+function showScreen(name){
+  document.getElementById('screen-start').classList.toggle('hidden', name!=='start');
+  document.getElementById('screen-quiz').classList.toggle('hidden', name!=='quiz');
+  document.getElementById('screen-results').classList.toggle('hidden', name!=='results');
+  if(name !== 'quiz'){
+    document.body.removeAttribute('data-module');
+  }
+}
+
+let userPicks = [];
+
+function renderQuestion(){
+  answered = false;
+  userPicks = [];
+  const q = flatQuestions[currentIndex];
+  document.body.setAttribute('data-module', q.modId);
+  const shortModLabel = {m1:'Module 1', m2:'Module 2', m3:'Module 3'}[q.modId] || q.modName;
+  document.getElementById('q-module-name').textContent = shortModLabel;
+  document.getElementById('q-section-name').textContent = q.secName;
+  document.getElementById('q-prompt').textContent = q.prompt;
+  document.getElementById('q-multi-hint').classList.toggle('hidden', q.type !== 'multi');
+  document.getElementById('progress-text').textContent = `Question ${currentIndex+1} of ${flatQuestions.length}`;
+  document.getElementById('progress-score').textContent = `Score: ${score}`;
+  document.getElementById('progress-fill').style.width = `${(currentIndex/flatQuestions.length)*100}%`;
+
+  const optWrap = document.getElementById('q-options');
+  optWrap.innerHTML = '';
+  q.options.forEach((opt, idx)=>{
+    const row = document.createElement('div');
+    row.className = 'option';
+    row.dataset.type = q.type;
+    row.dataset.idx = idx;
+    row.innerHTML = `<div class="mark"><div class="dot"></div></div><div class="option-text">${opt.text}</div>`;
+    row.addEventListener('click', ()=> pickOption(idx, q.type));
+    optWrap.appendChild(row);
+  });
+
+  document.getElementById('q-feedback').className = 'feedback';
+  const noteEl = document.getElementById('q-feedback-note');
+  noteEl.classList.add('hidden');
+  noteEl.textContent = '';
+  document.getElementById('btn-submit').classList.remove('hidden');
+  document.getElementById('btn-submit').disabled = true;
+  document.getElementById('btn-next').classList.add('hidden');
+}
+
+function pickOption(idx, type){
+  if(answered) return;
+  if(type === 'single'){
+    userPicks = [idx];
+  } else {
+    const pos = userPicks.indexOf(idx);
+    if(pos === -1) userPicks.push(idx); else userPicks.splice(pos,1);
+  }
+  document.querySelectorAll('#q-options .option').forEach(el=>{
+    const i = Number(el.dataset.idx);
+    el.classList.toggle('picked', userPicks.includes(i));
+  });
+  document.getElementById('btn-submit').disabled = userPicks.length === 0;
+}
+
+document.getElementById('btn-submit').addEventListener('click', ()=>{
+  if(answered || userPicks.length === 0) return;
+  answered = true;
+  const q = flatQuestions[currentIndex];
+  const correctIdxs = q.options.map((o,i)=>o.correct?i:-1).filter(i=>i!==-1);
+  const isCorrect = correctIdxs.length === userPicks.length && correctIdxs.every(i=>userPicks.includes(i));
+
+  document.querySelectorAll('#q-options .option').forEach(el=>{
+    const i = Number(el.dataset.idx);
+    el.classList.add('locked');
+    if(q.options[i].correct){
+      el.classList.add('correct-reveal');
+    } else if(userPicks.includes(i)){
+      el.classList.add('wrong-reveal');
+    }
+  });
+
+  const fb = document.getElementById('q-feedback');
+  fb.classList.add('show');
+  const key = `${q.modId}::${q.secId}`;
+  if(isCorrect){
+    score++;
+    sectionTally[key].correct++;
+    fb.className = 'feedback show correct';
+    fb.innerHTML = '<b>Correct.</b>Nice work \u2014 on to the next one.';
+  } else {
+    fb.className = 'feedback show wrong';
+    const correctText = q.options.filter(o=>o.correct).map(o=>o.text).join(' / ');
+    fb.innerHTML = `<b>Not quite.</b>Correct answer: ${correctText}`;
+    missed.push({prompt:q.prompt, correctText, secName:q.secName, modName:q.modName});
+  }
+  const noteEl = document.getElementById('q-feedback-note');
+  if(q.note){
+    noteEl.textContent = q.note;
+    noteEl.classList.remove('hidden');
+  }
+  document.getElementById('progress-score').textContent = `Score: ${score}`;
+  document.getElementById('btn-submit').classList.add('hidden');
+  document.getElementById('btn-next').classList.remove('hidden');
+});
+
+document.getElementById('btn-next').addEventListener('click', ()=>{
+  currentIndex++;
+  if(currentIndex >= flatQuestions.length){
+    showResults();
+  } else {
+    renderQuestion();
+  }
+});
+
+function showResults(){
+  document.body.removeAttribute('data-module');
+  document.getElementById('progress-fill').style.width = '100%';
+  const pct = Math.round((score/flatQuestions.length)*100);
+  document.getElementById('final-score').textContent = `${pct}%`;
+  document.getElementById('final-sub').textContent = `${score} of ${flatQuestions.length} correct`;
+
+  const bd = document.getElementById('breakdown');
+  bd.innerHTML = '';
+  let lastMod = null;
+  activeSelections.forEach(sel=>{
+    if(sel.modName !== lastMod){
+      const label = document.createElement('div');
+      label.className = 'bd-group-label';
+      label.textContent = sel.modName;
+      bd.appendChild(label);
+      lastMod = sel.modName;
+    }
+    const t = sectionTally[`${sel.modId}::${sel.secId}`];
+    const p = Math.round((t.correct/t.total)*100);
+    const row = document.createElement('div');
+    row.className = 'bd-row';
+    row.innerHTML = `
+      <div class="bd-name">${t.name}</div>
+      <div class="bd-bar-track"><div class="bd-bar-fill" style="width:${p}%"></div></div>
+      <div class="bd-frac">${t.correct}/${t.total}</div>
+    `;
+    bd.appendChild(row);
+  });
+
+  const reviewWrap = document.getElementById('review-wrap');
+  const reviewList = document.getElementById('review-list');
+  reviewList.innerHTML = '';
+  if(missed.length === 0){
+    reviewWrap.querySelector('h3').textContent = 'Perfect run \u2014 nothing to revisit.';
+  } else {
+    reviewWrap.querySelector('h3').textContent = 'Questions to revisit';
+    missed.forEach(mi=>{
+      const item = document.createElement('div');
+      item.className = 'review-item';
+      item.innerHTML = `<div class="rp">${mi.prompt}</div><div class="ra">${mi.modName} &middot; ${mi.secName} &middot; Correct: <b>${mi.correctText}</b></div>`;
+      reviewList.appendChild(item);
+    });
+  }
+
+  showScreen('results');
+}
+
+document.getElementById('btn-retake').addEventListener('click', ()=>{
+  buildFlatQuestions();
+  score = 0; currentIndex = 0; missed = [];
+  activeSelections.forEach(sel=>{
+    sectionTally[`${sel.modId}::${sel.secId}`] = {correct:0,total:sel.questions.length,name:sel.secName,modName:sel.modName};
+  });
+  showScreen('quiz');
+  renderQuestion();
+});
+
+document.getElementById('btn-home').addEventListener('click', ()=>{
+  showScreen('start');
+});
+</script>
+</body>
+</html>
